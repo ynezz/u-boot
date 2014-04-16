@@ -151,6 +151,7 @@ typedef struct {
 typedef struct {
 	flash_header_v2_t fhdr;
 	boot_data_t boot_data;
+	uint32_t reserved1;
 	dcd_v2_t dcd_table;
 } imx_header_v2_t;
 
