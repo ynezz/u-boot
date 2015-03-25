@@ -15,4 +15,17 @@ config SYS_SOC
 config SYS_CONFIG_NAME
 	default "colibri_vf"
 
+config TRDX_CFG_BLOCK
+	default y
+
+config TRDX_HAVE_NAND
+	default y
+
+config TRDX_CFG_BLOCK_OFFSET
+	default "0x800"
+
+config TRDX_CFG_BLOCK_2ND_ETHADDR
+	default y
+
+source "board/toradex/common/Kconfig"
 endif

@@ -21,6 +21,8 @@
 #include <i2c.h>
 #include <g_dnl.h>
 
+#include "../common/configblock.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define UART_PAD_CTRL	(PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED | \
@@ -364,11 +366,17 @@ int board_init(void)
 
 int checkboard(void)
 {
+#ifdef CONFIG_TRDX_CFG_BLOCK
+	if (read_trdx_cfg_block())
+		printf("Missing Toradex config block\n");
+	else
+		display_board_info();
+#else
 	if (is_colibri_vf61())
 		puts("Board: Colibri VF61\n");
 	else
 		puts("Board: Colibri VF50\n");
-
+#endif
 	return 0;
 }
 
