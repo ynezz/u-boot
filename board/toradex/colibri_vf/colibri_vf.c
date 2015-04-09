@@ -8,6 +8,7 @@
  */
 
 #include <common.h>
+#include <dm.h>
 #include <asm/io.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/iomux-vf610.h>
@@ -22,6 +23,7 @@
 #include <netdev.h>
 #include <i2c.h>
 #include <g_dnl.h>
+#include <asm/gpio.h>
 
 #include "../common/configblock.h"
 
@@ -391,6 +393,24 @@ int board_early_init_f(void)
 static const struct boot_mode board_boot_modes[] = {
 	{"nand", MAKE_CFGVAL(0x80, 0x02, 0x00, 0x00)},
 	{NULL,	 0},
+};
+#endif
+
+#ifndef CONFIG_OF_CONTROL
+static const struct vybrid_gpio_platdata vybrid_gpio[] = {
+	{0, GPIO0_BASE_ADDR},
+	{1, GPIO1_BASE_ADDR},
+	{2, GPIO2_BASE_ADDR},
+	{3, GPIO3_BASE_ADDR},
+	{4, GPIO4_BASE_ADDR},
+};
+
+U_BOOT_DEVICES(vybrid_gpio) = {
+	{ "gpio_vybrid", &vybrid_gpio[0] },
+	{ "gpio_vybrid", &vybrid_gpio[1] },
+	{ "gpio_vybrid", &vybrid_gpio[2] },
+	{ "gpio_vybrid", &vybrid_gpio[3] },
+	{ "gpio_vybrid", &vybrid_gpio[4] },
 };
 #endif
 
