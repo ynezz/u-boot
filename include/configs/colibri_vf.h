@@ -159,8 +159,13 @@
 	"setup=setenv setupargs " \
 		"fec_mac=${ethaddr} console=tty1 console=${console}" \
 		",${baudrate}n8 ${memargs}\0" \
-	"setupdate=fatload mmc 0:1 ${loadaddr} flash_mmc.img && " \
+	"setsdupdate=mmc rescan && set interface mmc && " \
+		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
 		"source ${loadaddr}\0" \
+	"setusbupdate=usb start && set interface usb && " \
+		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
+		"source ${loadaddr}\0" \
+	"setupdate=run setsdupdate || run setusbupdate\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 	"dfu_alt_info=" DFU_ALT_NAND_INFO "\0" \
 	SD_BOOTCMD \
