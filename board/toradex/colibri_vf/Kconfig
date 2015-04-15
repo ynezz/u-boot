@@ -27,5 +27,4 @@ config TRDX_CFG_BLOCK_OFFSET
 config TRDX_CFG_BLOCK_2ND_ETHADDR
 	default y
 
-source "board/toradex/common/Kconfig"
 endif
