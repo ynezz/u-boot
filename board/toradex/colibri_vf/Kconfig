@@ -22,7 +22,7 @@ config TRDX_HAVE_NAND
 	default y
 
 config TRDX_CFG_BLOCK_OFFSET
-	default "0x800"
+	default "2048"
 
 config TRDX_CFG_BLOCK_2ND_ETHADDR
 	default y
