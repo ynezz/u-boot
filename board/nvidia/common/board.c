@@ -53,9 +53,11 @@ U_BOOT_DEVICE(tegra_gpios) = {
 };
 #endif
 
+#ifdef CONFIG_DISPLAY_BOARDINFO
 const struct tegra_sysinfo sysinfo = {
 	CONFIG_TEGRA_BOARD_STRING
 };
+#endif	/* CONFIG_DISPLAY_BOARDINFO */
 
 __weak void pinmux_init(void) {}
 __weak void pin_mux_usb(void) {}
