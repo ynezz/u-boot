@@ -19,7 +19,13 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define TAG_FLAG_VALID	0x1
 
+#if defined(CONFIG_TRDX_CFG_BLOCK_IS_IN_MMC)
+#define TRDX_CFG_BLOCK_MAX_SIZE 512
+#elif defined(CONFIG_TRDX_CFG_BLOCK_IS_IN_NAND)
 #define TRDX_CFG_BLOCK_MAX_SIZE 64
+#else
+#error Toradex config block location not set
+#endif
 
 struct toradex_tag {
 	u32 len : 14;
@@ -44,11 +50,66 @@ struct toradex_hw toradex_hw_tag;
 struct toradex_eth_addr eth_addr;
 u32 toradex_serial;
 
+enum {
+	COLIBRI_PXA320 = 3,
+	COLIBRI_PXA300,
+	COLIBRI_PXA310,
+	COLIBRI_PXA320_IT,
+	COLIBRI_PXA300_XT,
+	COLIBRI_PXA270_312MHZ,
+	COLIBRI_PXA270_520MHZ,
+	COLIBRI_VF50, /* not currently on sale */
+	COLIBRI_VF61,
+	COLIBRI_VF61_IT,
+	COLIBRI_VF50_IT,
+	COLIBRI_IMX6S,
+	COLIBRI_IMX6DL,
+	COLIBRI_IMX6S_IT,
+	COLIBRI_IMX6DL_IT,
+	COLIBRI_T20_256MB = 20,
+	COLIBRI_T20_512MB,
+	COLIBRI_T20_512MB_IT,
+	COLIBRI_T30,
+	COLIBRI_T20_256MB_IT,
+	APALIS_T30_2GB,
+	APALIS_T30_1GB,
+	APALIS_IMX6Q,
+	APALIS_IMX6Q_IT,
+	APALIS_IMX6D,
+	COLIBRI_T30_IT,
+	APALIS_T30_IT,
+};
+
 static const char* const toradex_modules[] = {
-	[10] = "Colibri VF50 256MB", /* not on sale currently */
+	 [1] = "Colibri PXA270 312MHz",
+	 [2] = "Colibri PXA270 520MHz",
+	 [3] = "Colibri PXA320 806MHz",
+	 [4] = "Colibri PXA300 208MHz",
+	 [5] = "Colibri PXA310 624MHz",
+	 [6] = "Colibri PXA320 806MHz IT",
+	 [7] = "Colibri PXA300 208MHz XT",
+	 [8] = "Colibri PXA270 312MHz",
+	 [9] = "Colibri PXA270 520MHz",
+	[10] = "Colibri VF50 128MB", /* not currently on sale */
 	[11] = "Colibri VF61 256MB",
 	[12] = "Colibri VF61 256MB IT",
-	[13] = "Colibri VF50 256MB IT",
+	[13] = "Colibri VF50 128MB IT",
+	[14] = "Colibri iMX6 Solo 256MB",
+	[15] = "Colibri iMX6 DualLite 512MB",
+	[16] = "Colibri iMX6 Solo 256MB IT",
+	[17] = "Colibri iMX6 DualLite 512MB IT",
+	[20] = "Colibri T20 256MB",
+	[21] = "Colibri T20 512MB",
+	[22] = "Colibri T20 512MB IT",
+	[23] = "Colibri T30 1GB",
+	[24] = "Colibri T20 256MB IT",
+	[25] = "Apalis T30 2GB",
+	[26] = "Apalis T30 1GB",
+	[27] = "Apalis iMX6 Quad 1GB",
+	[28] = "Apalis iMX6 Quad 2GB IT",
+	[29] = "Apalis iMX6 Dual 512MB",
+	[30] = "Colibri T30 1GB IT",
+	[31] = "Apalis T30 1GB IT",
 };
 
 #ifdef CONFIG_REVISION_TAG
@@ -99,7 +160,7 @@ void get_board_serial(struct tag_serialnr *serialnr)
 #endif /* CONFIG_SERIAL_TAG */
 
 #ifdef CONFIG_TRDX_CFG_BLOCK_IS_IN_MMC
-static int read_trdx_cfg_block_from_mmc(unsigned char *config_block)
+static int trdx_cfg_block_mmc_storage(u8 *config_block, int write)
 {
 	struct mmc *mmc;
 	int dev = CONFIG_TRDX_CFG_BLOCK_DEV;
@@ -126,11 +187,22 @@ static int read_trdx_cfg_block_from_mmc(unsigned char *config_block)
 		offset += mmc->capacity;
 	blk_start = ALIGN(offset, mmc->write_bl_len) / mmc->write_bl_len;
 
-	/* Just reading one 512 byte block */
-	if (mmc->block_dev.block_read(dev, blk_start, 1,
-				      (unsigned char *)config_block) != 1) {
-		ret = -EIO;
-		goto out;
+	if (!write) {
+		/* Careful reads a whole block of 512 bytes into config_block */
+		if (mmc->block_dev.block_read(dev, blk_start, 1,
+					      (unsigned char *)config_block) !=
+		    1) {
+			ret = -EIO;
+			goto out;
+		}
+	} else {
+		/* Just writing one 512 byte block */
+		if (mmc->block_dev.block_write(dev, blk_start, 1,
+					       (unsigned char *)config_block) !=
+		    1) {
+			ret = -EIO;
+			goto out;
+		}
 	}
 
 out:
@@ -164,7 +236,7 @@ static int write_trdx_cfg_block_to_nand(unsigned char *config_block)
 int read_trdx_cfg_block(void)
 {
 	int ret = 0;
-	unsigned char *config_block = NULL;
+	u8 *config_block = NULL;
 	struct toradex_tag *tag;
 	size_t size = TRDX_CFG_BLOCK_MAX_SIZE;
 	int offset;
@@ -172,21 +244,23 @@ int read_trdx_cfg_block(void)
 	char serial[9];
 
 	/* Allocate RAM area for config block */
-	config_block = malloc(size);
+	config_block = memalign(ARCH_DMA_MINALIGN, size);
 	if (!config_block) {
 		printf("Not enough malloc space available!\n");
 		return -ENOMEM;
 	}
 
-	memset((void *)config_block, 0, size);
+	memset(config_block, 0, size);
 
 #if defined(CONFIG_TRDX_CFG_BLOCK_IS_IN_MMC)
-	ret = read_trdx_cfg_block_from_mmc(config_block);
+	ret = trdx_cfg_block_mmc_storage(config_block, 0);
 #elif defined(CONFIG_TRDX_CFG_BLOCK_IS_IN_NAND)
 	ret = read_trdx_cfg_block_from_nand(config_block);
 #else
-#error "Toradex config block location not set"
+	ret = -EINVAL;
 #endif
+	if (ret)
+		goto out;
 
 	/* Expect a valid tag first */
 	tag = (struct toradex_tag *)config_block;
@@ -209,7 +283,7 @@ int read_trdx_cfg_block(void)
 		case TAG_MAC:
 			memcpy(&eth_addr, config_block + offset, 6);
 
-			/* The NIC part of the MAC address is the serial number */
+			/* NIC part of MAC address is serial number */
 			toradex_serial = ntohl(eth_addr.nic) >> 8;
 
 			/* board serial-number */
@@ -226,7 +300,7 @@ int read_trdx_cfg_block(void)
 #ifdef CONFIG_TRDX_CFG_BLOCK_2ND_ETHADDR
 			if (!eth_getenv_enetaddr("eth1addr", ethaddr)) {
 				/*
-				 * Secondary MAC address is allocated from a block
+				 * Secondary MAC address is allocated from block
 				 * 0x100000 higher then the first MAC address
 				 */
 				memcpy(ethaddr, &eth_addr, 6);
@@ -251,7 +325,7 @@ out:
 
 void display_board_info(void)
 {
-	printf("%s V%d.%d %c\n",
+	printf("Model: Toradex %s V%d.%d%c\n",
 		toradex_modules[toradex_hw_tag.prodid],
 		toradex_hw_tag.ver_major,
 		toradex_hw_tag.ver_minor,
@@ -275,7 +349,6 @@ void get_board_product_number(unsigned short *prodnr)
 
 static int get_cfgblock_interactive(void)
 {
-#ifdef CONFIG_TARGET_COLIBRI_VF
 	char message[CONFIG_SYS_CBSIZE];
 	char *soc;
 	char it = 'n';
@@ -286,29 +359,60 @@ static int get_cfgblock_interactive(void)
 	it = console_buffer[0];
 
 	soc = getenv("soc");
-	if (!strcmp("vf500", soc)) {
+	if (!strcmp("mx6", soc)) {
+		printf("Interactive mode on iMX6 modules not yet supported\n");
+		return -1;
+	} else if (!strcmp("tegra20", soc)) {
 		if (it == 'y' || it == 'Y')
-			toradex_hw_tag.prodid = 13;
+			if (gd->ram_size == 0x10000000)
+				toradex_hw_tag.prodid = COLIBRI_T20_256MB_IT;
+			else
+				toradex_hw_tag.prodid = COLIBRI_T20_512MB_IT;
 		else
-			toradex_hw_tag.prodid = 10;
+			if (gd->ram_size == 0x10000000)
+				toradex_hw_tag.prodid = COLIBRI_T20_256MB;
+			else
+				toradex_hw_tag.prodid = COLIBRI_T20_512MB;
+#ifdef CONFIG_MACH_TYPE
+	} else if (!strcmp("tegra30", soc)) {
+		if (CONFIG_MACH_TYPE == MACH_TYPE_APALIS_T30) {
+			if (it == 'y' || it == 'Y')
+				toradex_hw_tag.prodid = APALIS_T30_IT;
+			else
+				if (gd->ram_size == 0x40000000)
+					toradex_hw_tag.prodid = APALIS_T30_1GB;
+				else
+					toradex_hw_tag.prodid = APALIS_T30_2GB;
+		} else {
+			if (it == 'y' || it == 'Y')
+				toradex_hw_tag.prodid = COLIBRI_T30_IT;
+			else
+				toradex_hw_tag.prodid = COLIBRI_T30;
+		}
+#endif /* CONFIG_MACH_TYPE */
+	} else if (!strcmp("vf500", soc)) {
+		if (it == 'y' || it == 'Y')
+			toradex_hw_tag.prodid = COLIBRI_VF50_IT;
+		else
+			toradex_hw_tag.prodid = COLIBRI_VF50;
 	} else if (!strcmp("vf610", soc)) {
 		if (it == 'y' || it == 'Y')
-			toradex_hw_tag.prodid = 12;
+			toradex_hw_tag.prodid = COLIBRI_VF61_IT;
 		else
-			toradex_hw_tag.prodid = 11;
+			toradex_hw_tag.prodid = COLIBRI_VF61;
 	} else {
 		printf("Module type not detectable due to unknown SoC\n");
 		return -1;
 	}
 
-	while (len < 5) {
-		sprintf(message, "Enter the module version (e.g. V1.1 B): V");
+	while (len < 4) {
+		sprintf(message, "Enter the module version (e.g. V1.1B): V");
 		len = cli_readline(message);
 	}
 
 	toradex_hw_tag.ver_major = console_buffer[0] - '0';
 	toradex_hw_tag.ver_minor = console_buffer[2] - '0';
-	toradex_hw_tag.ver_assembly = console_buffer[4] - 'A';
+	toradex_hw_tag.ver_assembly = console_buffer[3] - 'A';
 
 	while (len < 8) {
 		sprintf(message, "Enter module serial number: ");
@@ -316,9 +420,6 @@ static int get_cfgblock_interactive(void)
 	}
 
 	toradex_serial = simple_strtoul(console_buffer, NULL, 10);
-#else
-	printf("Interactive mode not supported\n");
-#endif
 
 	return 0;
 }
@@ -354,7 +455,13 @@ static int do_cfgblock_create(cmd_tbl_t *cmdtp, int flag, int argc,
 	int offset = 0;
 	int ret;
 
-	config_block = malloc(size);
+	/* Allocate RAM area for config block */
+	config_block = memalign(ARCH_DMA_MINALIGN, size);
+	if (!config_block) {
+		printf("Not enough malloc space available!\n");
+		return -ENOMEM;
+	}
+
 	memset(config_block, 0xff, size);
 
 	read_trdx_cfg_block();
@@ -367,28 +474,33 @@ static int do_cfgblock_create(cmd_tbl_t *cmdtp, int flag, int argc,
 		printf("NAND erase block %d need to be erased before creating "
 		       "a Toradex config block\n",
 		       CONFIG_TRDX_CFG_BLOCK_OFFSET / nand_info[0].erasesize);
-		return 0;
+		ret = 0;
+		goto out;
 #else
 		char message[CONFIG_SYS_CBSIZE];
 		sprintf(message, "A valid Toradex config block is present, "
 			         "still recreate? [y/N] ");
 
-		if (!cli_readline(message))
-			return 0;
+		if (!cli_readline(message)) {
+			ret = 0;
+			goto out;
+		}
 
-		if (console_buffer[0] != 'y' && console_buffer[0] != 'Y')
-			return 0;
+		if (console_buffer[0] != 'y' && console_buffer[0] != 'Y') {
+			ret = 0;
+			goto out;
+		}
 #endif
 	}
 
-	/* Parse new Toradex config data... */
+	/* Parse new Toradex config  block data... */
 	if (argc < 3)
 		ret = get_cfgblock_interactive();
 	else
 		ret = get_cfgblock_barcode(argv[2]);
 
 	if (ret)
-		return ret;
+		goto out;
 
 	/* Convert serial number to MAC address (the storage format) */
 	eth_addr.oui = htonl(0x00142dUL << 8);
@@ -422,17 +534,22 @@ static int do_cfgblock_create(cmd_tbl_t *cmdtp, int flag, int argc,
 	offset +=6;
 	memset(config_block + offset, 0, 32 - offset);
 
-#ifdef CONFIG_TRDX_CFG_BLOCK_IS_IN_NAND
+#ifdef CONFIG_TRDX_CFG_BLOCK_IS_IN_MMC
+	ret = trdx_cfg_block_mmc_storage(config_block, 1);
+#elif defined(CONFIG_TRDX_CFG_BLOCK_IS_IN_NAND)
 	ret = write_trdx_cfg_block_to_nand(config_block);
+#else
+	ret = -EINVAL;
+#endif
 	if (ret) {
 		printf("Failed to write Toradex config block: %d\n", ret);
-		return ret;
+		goto out;
 	}
-#else
-	return 0;
-#endif
 
 	printf("Toradex config block successfully written\n");
+
+out:
+	free(config_block);
 	return ret;
 }
 
@@ -449,7 +566,8 @@ static int do_cfgblock(cmd_tbl_t *cmdtp, int flag, int argc,
 	} else if (!strcmp(argv[1], "reload")) {
 		ret = read_trdx_cfg_block();
 		if (ret)
-			printf("Failed to reload Toradex config block: %d\n", ret);
+			printf("Failed to reload Toradex config block: %d\n",
+			       ret);
 		return 0;
 	}
 
