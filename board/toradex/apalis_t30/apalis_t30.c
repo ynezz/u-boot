@@ -1,22 +1,95 @@
 /*
- *  (C) Copyright 2014
- *  Marcel Ziswiler <marcel@ziswiler.com>
+ * Copyright (c) 2012-2015 Toradex, Inc.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
-#include <dm.h>
 #include <asm/arch/gp_padctrl.h>
 #include <asm/arch/pinmux.h>
+#include <asm/arch-tegra/ap.h>
+#include <asm/arch-tegra/tegra.h>
 #include <asm/gpio.h>
+#include <asm/io.h>
+#include <dm.h>
+#include <g_dnl.h>
 #include <i2c.h>
 #include <netdev.h>
 
 #include "pinmux-config-apalis_t30.h"
+#include "../common/configblock.h"
+
+DECLARE_GLOBAL_DATA_PTR;
 
 #define PMU_I2C_ADDRESS		0x2D
 #define MAX_I2C_RETRY		3
+
+int arch_misc_init(void)
+{
+	/* Default memory arguments */
+	if (!getenv("memargs")) {
+		switch (gd->ram_size) {
+		case 0x40000000:
+			/* 1 GB */
+			setenv("memargs", "vmalloc=128M mem=1012M@2048M "
+					  "fbmem=12M@3060M");
+			break;
+		case 0x7ff00000:
+		case 0x80000000:
+			/* 2 GB */
+			setenv("memargs", "vmalloc=256M mem=2035M@2048M "
+					  "fbmem=12M@4083M");
+			break;
+		default:
+			printf("Failed detecting RAM size.\n");
+		}
+	}
+
+	if (readl(NV_PA_BASE_SRAM + NVBOOTINFOTABLE_BOOTTYPE) ==
+	    NVBOOTTYPE_RECOVERY) {
+		printf("USB recovery mode, disabled autoboot\n");
+		setenv("bootdelay", "-1");
+	}
+
+	return 0;
+}
+
+int checkboard(void)
+{
+#ifdef CONFIG_TRDX_CFG_BLOCK
+	if (read_trdx_cfg_block())
+		printf("Missing Toradex config block\n");
+	else {
+		display_board_info();
+		return 0;
+	}
+#endif
+	printf("Model: Toradex Apalis T30 %dGB\n", (gd->ram_size == 0x40000000)?1:2);
+
+	return 0;
+}
+
+int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
+{
+	unsigned short prodnr = 0;
+	unsigned short usb_pid;
+
+	get_board_product_number(&prodnr);
+
+	put_unaligned(CONFIG_TRDX_VID, &dev->idVendor);
+
+	if (prodnr != 31)
+		if (gd->ram_size == 0x40000000)
+			usb_pid = CONFIG_TRDX_PID_APALIS_T30_1G;
+		else
+			usb_pid = CONFIG_TRDX_PID_APALIS_T30_2G;
+	else
+		usb_pid = CONFIG_TRDX_PID_APALIS_T30_1G_IT;
+
+	put_unaligned(usb_pid, &dev->idProduct);
+
+	return 0;
+}
 
 /*
  * Routine: pinmux_init

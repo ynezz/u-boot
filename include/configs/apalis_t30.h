@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2014-2015 Marcel Ziswiler
+ * Copyright (c) 2012-2015 Toradex, Inc.
+ *
+ * Configuration settings for the Toradex Apalis T30 modules.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -11,9 +13,13 @@
 
 #include "tegra30-common.h"
 
+#define CONFIG_ARCH_MISC_INIT
+
 /* High-level configuration options */
 #define V_PROMPT			"Apalis T30 # "
-#define CONFIG_TEGRA_BOARD_STRING	"Toradex Apalis T30"
+#define CONFIG_CUSTOM_BOARDINFO		/* not from device-tree model node */
+#undef CONFIG_DISPLAY_BOARDINFO
+#define CONFIG_DISPLAY_BOARDINFO_LATE
 
 /* Board-specific serial config */
 #define CONFIG_SERIAL_MULTI
@@ -22,11 +28,20 @@
 
 #define CONFIG_MACH_TYPE		MACH_TYPE_APALIS_T30
 
+#define CONFIG_INITRD_TAG
+#define CONFIG_REVISION_TAG
+#define CONFIG_SERIAL_TAG
+
+/* Make the HW version stuff available in U-Boot env */
+#define CONFIG_VERSION_VARIABLE		/* ver environment variable */
+#define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+#define CONFIG_CMD_ASKENV
+
 /* I2C */
 #define CONFIG_SYS_I2C_TEGRA
 #define CONFIG_CMD_I2C
 
-/* SD/MMC */
+/* SD/MMC support */
 #define CONFIG_MMC
 #define CONFIG_GENERIC_MMC
 #define CONFIG_TEGRA_MMC
@@ -38,15 +53,27 @@
 #define CONFIG_SYS_MMC_ENV_DEV		0
 #define CONFIG_SYS_MMC_ENV_PART		2
 
-/* USB Host support */
+/* USB client support */
+#define CONFIG_TRDX_VID				0x1B67
+/* TBD */
+#define CONFIG_TRDX_PID_APALIS_T30_1G		0x001A
+#define CONFIG_TRDX_PID_APALIS_T30_2G		0x001B
+#define CONFIG_TRDX_PID_APALIS_T30_1G_IT	0x001C
+#define CONFIG_TRDX_PID_APALIS_T30_2G_IT	0x001D
+#define CONFIG_G_DNL_MANUFACTURER		"Toradex"
+#define CONFIG_G_DNL_VENDOR_NUM			CONFIG_TRDX_VID
+#define CONFIG_G_DNL_PRODUCT_NUM		CONFIG_TRDX_PID_APALIS_T30_1G
+
+/* USB host support */
 #define CONFIG_USB_EHCI
 #define CONFIG_USB_EHCI_TEGRA
-#define CONFIG_USB_MAX_CONTROLLER_COUNT 3
+#define CONFIG_USB_MAX_CONTROLLER_COUNT		3
 #define CONFIG_USB_STORAGE
 #define CONFIG_CMD_USB
 
 /* PCI host support */
 #define CONFIG_PCI
+#undef CONFIG_PCI_SCAN_SHOW
 #define CONFIG_PCI_TEGRA
 #define CONFIG_PCI_PNP
 #define CONFIG_CMD_PCI
@@ -64,6 +91,94 @@
 #define CONFIG_CMD_SETEXPR
 #define CONFIG_FAT_WRITE
 
+#undef CONFIG_BOOTDELAY
+#define CONFIG_BOOTDELAY	1
+#undef CONFIG_IPADDR
+#define CONFIG_IPADDR		192.168.10.2
+#define CONFIG_NETMASK		255.255.255.0
+#undef CONFIG_SERVERIP
+#define CONFIG_SERVERIP		192.168.10.1
+
+#define CONFIG_BOOTCOMMAND \
+	"run emmcboot; echo; echo emmcboot failed; " \
+	"run sdboot; echo; echo sdboot failed; " \
+	"run usbboot; echo; echo usbboot failed; " \
+	"run nfsboot; echo; echo nfsboot failed"
+
+#define DFU_ALT_EMMC_INFO	"apalis_t30.img raw 0x0 0x500 mmcpart 1; " \
+				"/uImage fat 0 1 mmcpart 0; " \
+				"/tegra30-apalis-eval.dtb fat 0 1 mmcpart 0; " \
+				"rootfs part 0 2 mmcpart 0"
+
+#define EMMC_BOOTCMD \
+	"emmcargs=ip=off root=/dev/mmcblk0p2 rw,noatime rootfstype=ext3 " \
+		"rootwait\0" \
+	"emmcboot=run setup; setenv bootargs ${defargs} ${emmcargs} " \
+		"${setupargs} ${vidargs}; echo Booting from internal eMMC " \
+		"chip...; run emmcdtbload; load mmc 0:1 ${kernel_addr_r} " \
+		"${boot_file} && bootm ${kernel_addr_r} - ${dtbparam}\0" \
+	"emmcdtbload=setenv dtbparam; load mmc 0:1 ${fdt_addr_r} " \
+		"${soc}-apalis-${fdt_board}.dtb && " \
+		"setenv dtbparam ${fdt_addr_r}\0"
+
+#define NFS_BOOTCMD \
+	"nfsargs=ip=:::::eth0:on root=/dev/nfs rw netdevwait\0" \
+	"nfsboot=run setup; setenv bootargs ${defargs} ${nfsargs} " \
+		"${setupargs} ${vidargs}; echo Booting via DHCP/TFTP/NFS...; " \
+		"run nfsdtbload; dhcp ${kernel_addr_r} " \
+		"&& bootm ${kernel_addr_r} - ${dtbparam}\0" \
+	"nfsdtbload=setenv dtbparam; tftp ${fdt_addr_r} " \
+		"${soc}-apalis-${fdt_board}.dtb " \
+		"&& setenv dtbparam ${fdt_addr_r}\0"
+
+#define SD_BOOTCMD \
+	"sdargs=ip=off root=/dev/mmcblk1p2 rw,noatime rootfstype=ext3 " \
+		"rootwait\0" \
+	"sdboot=run setup; setenv bootargs ${defargs} ${sdargs} ${setupargs} " \
+		"${vidargs}; echo Booting from SD card in 8bit slot...; " \
+		"run sddtbload; load mmc 1:1 ${kernel_addr_r} " \
+		"${boot_file} && bootm ${kernel_addr_r} - ${dtbparam}\0" \
+	"sddtbload=setenv dtbparam; load mmc 1:1 ${fdt_addr_r} " \
+		"${soc}-apalis-${fdt_board}.dtb " \
+		"&& setenv dtbparam ${fdt_addr_r}\0"
+
+#define USB_BOOTCMD \
+	"usbargs=ip=off root=/dev/sda2 rw,noatime rootfstype=ext3 " \
+		"rootwait\0" \
+	"usbboot=run setup; setenv bootargs ${defargs} ${setupargs} " \
+		"${usbargs} ${vidargs}; echo Booting from USB stick...; " \
+		"usb start && run usbdtbload; load usb 0:1 ${kernel_addr_r} " \
+		"${boot_file} && bootm ${kernel_addr_r} - ${dtbparam}\0" \
+	"usbdtbload=setenv dtbparam; load usb 0:1 ${fdt_addr_r} " \
+		"${soc}-apalis-${fdt_board}.dtb " \
+		"&& setenv dtbparam ${fdt_addr_r}\0"
+
+#define BOARD_EXTRA_ENV_SETTINGS \
+	"boot_file=uImage\0" \
+	"console=ttyS0\0" \
+	"defargs=core_edp_mv=1300 usb_high_speed=1\0" \
+	"dfu_alt_info=" DFU_ALT_EMMC_INFO "\0" \
+	EMMC_BOOTCMD \
+	"fdt_board=eval\0" \
+	NFS_BOOTCMD \
+	SD_BOOTCMD \
+	"setethupdate=tftpboot ${kernel_addr_r} flash_eth.img " \
+		"&& source ${kernel_addr_r}\0" \
+	"setsdupdate=setenv interface mmc; setenv drive 1; mmc rescan; " \
+		"load ${interface} ${drive}:1 ${kernel_addr_r} flash_blk.img " \
+		"|| setenv drive 2; mmc rescan; load ${interface} ${drive}:1 " \
+		"${kernel_addr_r} flash_blk.img && source ${kernel_addr_r}\0" \
+	"setup=setenv setupargs igb_mac=${ethaddr} " \
+		"consoleblank=0  no_console_suspend=1 console=tty1 " \
+		"console=${console},${baudrate}n8 debug_uartport=lsport,0 " \
+		"${memargs}\0" \
+	"setusbupdate=setenv interface usb; setenv drive 1; " \
+		"load ${interface} ${drive}:1 ${kernel_addr_r} flash_blk.img " \
+		"&& source ${kernel_addr_r}\0" \
+	"setupdate=run setsdupdate || run setusbupdate || run setethupdate\0" \
+	USB_BOOTCMD \
+	"vidargs=video=tegrafb0:640x480-16@60 fbcon=map:1\0"
+
 /* Increase console I/O buffer size */
 #undef CONFIG_SYS_CBSIZE
 #define CONFIG_SYS_CBSIZE		1024
@@ -78,6 +193,10 @@
 /* Increase maximum number of arguments */
 #undef CONFIG_SYS_MAXARGS
 #define CONFIG_SYS_MAXARGS		32
+
+#define CONFIG_CMD_TIME
+#define CONFIG_CMD_MEMTEST
+#define CONFIG_SYS_ALT_MEMTEST
 
 #include "tegra-common-usb-gadget.h"
 #include "tegra-common-post.h"
