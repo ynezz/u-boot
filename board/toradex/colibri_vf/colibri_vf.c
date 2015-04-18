@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Toradex, Inc.
+ * Copyright 2013-2015 Toradex, Inc.
  *
  * Based on vf610twr.c:
  * Copyright 2013 Freescale Semiconductor, Inc.
@@ -336,7 +336,7 @@ int board_late_init(void)
 
 	if (((src->sbmr2 & SRC_SBMR2_BMOD_MASK) >> SRC_SBMR2_BMOD_SHIFT)
 			== SRC_SBMR2_BMOD_SERIAL) {
-		printf("Serial Downloader recovery mode, disable autoboot\n");
+		printf("Serial Downloader recovery mode, disabled autoboot\n");
 		setenv("bootdelay", "-1");
 	}
 
@@ -355,7 +355,7 @@ int board_init(void)
 	 * Enable external 32K Oscillator
 	 *
 	 * The internal clock experiences significant drift
-     * so we must use the external oscillator in order
+	 * so we must use the external oscillator in order
 	 * to maintain correct time in the hwclock
 	 */
 
@@ -369,14 +369,16 @@ int checkboard(void)
 #ifdef CONFIG_TRDX_CFG_BLOCK
 	if (read_trdx_cfg_block())
 		printf("Missing Toradex config block\n");
-	else
+	else {
 		display_board_info();
-#else
-	if (is_colibri_vf61())
-		puts("Board: Colibri VF61\n");
-	else
-		puts("Board: Colibri VF50\n");
+		return 0;
+	}
 #endif
+	if (is_colibri_vf61())
+		puts("Model: Toradex Colibri VF61 256MB\n");
+	else
+		puts("Model: Toradex Colibri VF50 128MB\n");
+
 	return 0;
 }
 

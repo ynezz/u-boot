@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Toradex, Inc.
+ * Copyright 2013-2015 Toradex, Inc.
  *
  * Configuration settings for the Toradex VF50/VF61 module.
  *
@@ -159,10 +159,10 @@
 	"setup=setenv setupargs " \
 		"fec_mac=${ethaddr} console=tty1 console=${console}" \
 		",${baudrate}n8 ${memargs}\0" \
-	"setsdupdate=mmc rescan && set interface mmc && " \
+	"setsdupdate=mmc rescan && setenv interface mmc && " \
 		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
 		"source ${loadaddr}\0" \
-	"setusbupdate=usb start && set interface usb && " \
+	"setusbupdate=usb start && setenv interface usb && " \
 		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
 		"source ${loadaddr}\0" \
 	"setupdate=run setsdupdate || run setusbupdate\0" \
