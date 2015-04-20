@@ -14,6 +14,7 @@
 #include <asm/arch/ddrmc-vf610.h>
 #include <asm/arch/crm_regs.h>
 #include <asm/arch/clock.h>
+#include <asm/imx-common/boot_mode.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
 #include <miiphy.h>
@@ -313,6 +314,13 @@ int board_early_init_f(void)
 	return 0;
 }
 
+#ifdef CONFIG_CMD_BMODE
+static const struct boot_mode board_boot_modes[] = {
+	{"nand", MAKE_CFGVAL(0x80, 0x02, 0x00, 0x00)},
+	{NULL,	 0},
+};
+#endif
+
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
@@ -339,6 +347,10 @@ int board_late_init(void)
 		printf("Serial Downloader recovery mode, disabled autoboot\n");
 		setenv("bootdelay", "-1");
 	}
+
+#ifdef CONFIG_CMD_BMODE
+	add_board_boot_modes(board_boot_modes);
+#endif
 
 	return 0;
 }

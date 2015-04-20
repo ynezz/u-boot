@@ -9,6 +9,7 @@
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/crm_regs.h>
+#include <asm/imx-common/boot_mode.h>
 #include <netdev.h>
 #ifdef CONFIG_FSL_ESDHC
 #include <fsl_esdhc.h>
@@ -303,6 +304,35 @@ int arch_cpu_init(void)
 
 	return 0;
 }
+
+void boot_mode_apply(unsigned cfg_val)
+{
+	unsigned reg;
+	struct src *psrc = (struct src *)SRC_BASE_ADDR;
+	writel(cfg_val, &psrc->hab3);
+	reg = readl(&psrc->hab4);
+	if (cfg_val)
+		reg |= 1 << 28;
+	else
+		reg &= ~(1 << 28);
+	writel(reg, &psrc->hab4);
+}
+
+/*
+ * cfg_val will be used for
+ * Boot_cfg4[7:0]:Boot_cfg3[7:0]:Boot_cfg2[7:0]:Boot_cfg1[7:0]
+ * After reset, if GPR10[28] is 1, ROM will use GPR9[25:0]
+ * instead of SBMR1 to determine the boot device.
+ */
+const struct boot_mode soc_boot_modes[] = {
+	{"normal",	MAKE_CFGVAL(0x00, 0x00, 0x00, 0x00)},
+	/* reserved value should start ROM's serial loader */
+	{"ser",		MAKE_CFGVAL(0x40, 0x00, 0x00, 0x00)},
+	/* 4 bit bus width */
+	{"esdhc0",	MAKE_CFGVAL(0x60, 0x20, 0x00, 0x00)},
+	{"esdhc1",	MAKE_CFGVAL(0x60, 0x28, 0x00, 0x00)},
+	{NULL,		0},
+};
 
 #ifdef CONFIG_ARCH_MISC_INIT
 int arch_misc_init(void)
