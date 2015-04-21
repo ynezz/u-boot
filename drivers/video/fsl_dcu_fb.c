@@ -40,7 +40,7 @@
 #define DCU_VSYN_PARA_BP(x)		((x) << 22)
 #define DCU_VSYN_PARA_PW(x)		((x) << 11)
 #define DCU_VSYN_PARA_FP(x)		(x)
-#define DCU_SYN_POL_INV_PXCK_FALL	(0 << 6)
+#define DCU_SYN_POL_INV_PXCK_FALL	(1 << 6)
 #define DCU_SYN_POL_NEG_REMAIN		(0 << 5)
 #define DCU_SYN_POL_INV_VS_LOW		(1 << 1)
 #define DCU_SYN_POL_INV_HS_LOW		(1)
@@ -101,7 +101,7 @@ static struct fb_videomode fsl_dcu_mode_480_272 = {
 /*
  * This setting is used for Siliconimage SiI9022A HDMI
  */
-static struct fb_videomode fsl_dcu_mode_640_480 = {
+static struct fb_videomode fsl_dcu_cea_mode_640_480 = {
 	.name		= "640x480-60",
 	.refresh	= 60,
 	.xres		= 640,
@@ -111,6 +111,22 @@ static struct fb_videomode fsl_dcu_mode_640_480 = {
 	.right_margin	= 16,
 	.upper_margin	= 33,
 	.lower_margin	= 10,
+	.hsync_len	= 96,
+	.vsync_len	= 2,
+	.sync		= 0,
+	.vmode		= FB_VMODE_NONINTERLACED,
+};
+
+static struct fb_videomode fsl_dcu_mode_640_480 = {
+	.name		= "640x480-60",
+	.refresh	= 60,
+	.xres		= 640,
+	.yres		= 480,
+	.pixclock	= 25175,
+	.left_margin	= 40,
+	.right_margin	= 24,
+	.upper_margin	= 32,
+	.lower_margin	= 11,
 	.hsync_len	= 96,
 	.vsync_len	= 2,
 	.sync		= 0,
@@ -175,7 +191,7 @@ static void reset_total_layers(void)
 	struct dcu_reg *regs = (struct dcu_reg *)CONFIG_SYS_DCU_ADDR;
 	int i;
 
-	for (i = 0; i < DCU_LAYER_MAX_NUM; i++) {
+	for (i = 0; i < DCU_TOTAL_LAYER_NUM; i++) {
 		dcu_write32(&regs->ctrldescl[i][0], 0);
 		dcu_write32(&regs->ctrldescl[i][1], 0);
 		dcu_write32(&regs->ctrldescl[i][2], 0);
@@ -185,8 +201,10 @@ static void reset_total_layers(void)
 		dcu_write32(&regs->ctrldescl[i][6], 0);
 		dcu_write32(&regs->ctrldescl[i][7], 0);
 		dcu_write32(&regs->ctrldescl[i][8], 0);
+#ifdef CONFIG_LS102XA
 		dcu_write32(&regs->ctrldescl[i][9], 0);
 		dcu_write32(&regs->ctrldescl[i][10], 0);
+#endif
 	}
 
 	dcu_write32(&regs->update_mode, DCU_UPDATE_MODE_READREG);
@@ -327,7 +345,11 @@ void *video_hw_init(void)
 		fsl_dcu_mode_db = &fsl_dcu_mode_480_272;
 		break;
 	case RESOLUTION(640, 480):
-		fsl_dcu_mode_db = &fsl_dcu_mode_640_480;
+		if (!strncmp(options, "monitor=hdmi", 12))
+			fsl_dcu_mode_db = &fsl_dcu_cea_mode_640_480;
+		else
+			fsl_dcu_mode_db = &fsl_dcu_mode_640_480;
+
 		break;
 	default:
 		printf("unsupported resolution %ux%u\n",
