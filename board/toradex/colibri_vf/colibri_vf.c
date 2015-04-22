@@ -17,6 +17,7 @@
 #include <asm/imx-common/boot_mode.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
+#include <fsl_dcu_fb.h>
 #include <miiphy.h>
 #include <netdev.h>
 #include <i2c.h>
@@ -462,3 +463,10 @@ int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
 
 	return 0;
 }
+
+#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
+int ft_board_setup(void *blob, bd_t *bd)
+{
+	return fsl_dcu_fixedfb_setup(blob);
+}
+#endif

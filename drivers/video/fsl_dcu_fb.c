@@ -6,8 +6,10 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+#include <asm/errno.h>
 #include <asm/io.h>
 #include <common.h>
+#include <fdt_support.h>
 #include <fsl_dcu_fb.h>
 #include <linux/fb.h>
 #include <malloc.h>
@@ -78,6 +80,8 @@
 #define BPP_16_RGB565			4
 #define BPP_24_RGB888			5
 #define BPP_32_ARGB8888			6
+
+DECLARE_GLOBAL_DATA_PTR;
 
 /*
  * This setting is used for the TWR_LCD_RGB card
@@ -268,11 +272,16 @@ int fsl_dcu_init(unsigned int xres, unsigned int yres,
 	struct dcu_reg *regs = (struct dcu_reg *)CONFIG_SYS_DCU_ADDR;
 	unsigned int div, mode;
 
-	/* Memory allocation for framebuffer */
 	info.screen_size =
 		info.var.xres * info.var.yres * (info.var.bits_per_pixel / 8);
-	info.screen_base = (char *)memalign(ARCH_DMA_MINALIGN,
-			roundup(info.screen_size, ARCH_DMA_MINALIGN));
+
+	if (info.screen_size > CONFIG_FSL_DCU_MAX_FB_SIZE)
+		return -ENOMEM;
+
+	/* Reserve framebuffer at the end of memory */
+	gd->fb_base = gd->bd->bi_dram[0].start +
+		      gd->bd->bi_dram[0].size - info.screen_size;
+	info.screen_base = (char *)gd->fb_base;
 	memset(info.screen_base, 0, info.screen_size);
 
 	reset_total_layers();
@@ -320,6 +329,11 @@ int fsl_dcu_init(unsigned int xres, unsigned int yres,
 	dcu_write32(&regs->update_mode, DCU_UPDATE_MODE_READREG);
 
 	return 0;
+}
+
+ulong board_get_usable_ram_top(ulong total_size)
+{
+	return gd->ram_top - CONFIG_FSL_DCU_MAX_FB_SIZE;
 }
 
 void *video_hw_init(void)
@@ -384,3 +398,21 @@ void *video_hw_init(void)
 
 	return &ctfb;
 }
+
+#if defined(CONFIG_OF_BOARD_SETUP)
+int fsl_dcu_fixedfb_setup(void *blob)
+{
+	u64 start, size;
+	int ret;
+
+	start = gd->bd->bi_dram[0].start;
+	size = gd->fb_base - gd->bd->bi_dram[0].start;
+	ret = fdt_fixup_memory_banks(blob, &start, &size, 1);
+	if (ret) {
+		eprintf("Cannot setup fb: Error reserving memory\n");
+		return ret;
+	}
+
+	return 0;
+}
+#endif
