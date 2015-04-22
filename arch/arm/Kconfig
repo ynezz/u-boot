@@ -502,6 +502,10 @@ config TARGET_APALIS_IMX6
 	bool "Toradex Apalis iMX6 board"
 	select CPU_V7
 
+config TARGET_COLIBRI_IMX6
+	bool "Toradex Colibri iMX6 board"
+	select CPU_V7
+
 config TARGET_CGTQMX6EVAL
 	bool "Support cgtqmx6eval"
 	select CPU_V7
@@ -883,6 +887,7 @@ source "board/ti/ti814x/Kconfig"
 source "board/ti/ti816x/Kconfig"
 source "board/timll/devkit3250/Kconfig"
 source "board/toradex/apalis_imx6/Kconfig"
+source "board/toradex/colibri_imx6/Kconfig"
 source "board/toradex/colibri_pxa270/Kconfig"
 source "board/toradex/colibri_vf/Kconfig"
 source "board/toradex/common/Kconfig"

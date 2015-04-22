@@ -1,0 +1,33 @@
+if TARGET_COLIBRI_IMX6
+
+config SYS_BOARD
+	default "colibri_imx6"
+
+config SYS_CONFIG_NAME
+	default "colibri_imx6"
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_VENDOR
+	default "toradex"
+
+config TRDX_CFG_BLOCK
+	default y
+
+config TRDX_HAVE_MMC
+	default y
+
+config TRDX_CFG_BLOCK_DEV
+	default "0"
+
+config TRDX_CFG_BLOCK_PART
+	default "0"
+
+config TRDX_CFG_BLOCK_OFFSET
+	default "655360"
+
+endif
