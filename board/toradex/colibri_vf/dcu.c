@@ -6,6 +6,7 @@
  */
 
 #include <asm/arch/crm_regs.h>
+#include <asm/io.h>
 #include <common.h>
 #include <fsl_dcu_fb.h>
 #include "div64.h"
@@ -14,8 +15,13 @@ DECLARE_GLOBAL_DATA_PTR;
 
 unsigned int dcu_set_pixel_clock(unsigned int pixclock)
 {
+	struct ccm_reg *ccm = (struct ccm_reg *)CCM_BASE_ADDR;
 	unsigned long long div;
 
+	clrbits_le32(&ccm->cscmr1, CCM_CSCMR1_DCU0_CLK_SEL);
+	clrsetbits_le32(&ccm->cscdr3,
+			CCM_CSCDR3_DCU0_DIV_MASK | CCM_CSCDR3_DCU0_EN,
+			CCM_CSCDR3_DCU0_DIV(0) | CCM_CSCDR3_DCU0_EN);
 	div = (unsigned long long)(PLL1_PFD2_FREQ / 1000);
 	do_div(div, pixclock);
 

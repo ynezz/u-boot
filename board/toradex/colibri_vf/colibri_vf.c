@@ -328,11 +328,6 @@ static void clock_init(void)
 	setbits_le32(&ccm->ccgr1, CCM_CCGR1_TCON0_CTRL_MASK);
 
 	setbits_le32(&ccm->ccgr3, CCM_CCGR3_DCU0_CTRL_MASK);
-
-	clrbits_le32(&ccm->cscmr1, CCM_CSCMR1_DCU0_CLK_SEL);
-	clrsetbits_le32(&ccm->cscdr3,
-			CCM_CSCDR3_DCU0_DIV_MASK | CCM_CSCDR3_DCU0_EN,
-			CCM_CSCDR3_DCU0_DIV(0) | CCM_CSCDR3_DCU0_EN);
 #endif
 }
 
