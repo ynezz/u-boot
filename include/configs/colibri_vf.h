@@ -190,7 +190,7 @@
 	"defargs=\0" \
 	"console=ttyLP0\0" \
 	"setup=setenv setupargs " \
-		"fec_mac=${ethaddr} console=tty1 console=${console}" \
+		"console=tty1 console=${console}" \
 		",${baudrate}n8 ${memargs}\0" \
 	"setsdupdate=mmc rescan && setenv interface mmc && " \
 		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
