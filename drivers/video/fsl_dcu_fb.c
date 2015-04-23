@@ -445,6 +445,13 @@ int fsl_dcu_fixedfb_setup(void *blob)
 
 	start = gd->bd->bi_dram[0].start;
 	size = gd->fb_base - gd->bd->bi_dram[0].start;
+
+	/*
+	 * Align size on section size (1 MiB). The Linux kernel would crash
+	 * otherwise, this seems to be a limitation/bug of the Linux
+	 * kernel currently (Linux ~4.0)
+	 */
+	size &= 0xfff00000;
 	ret = fdt_fixup_memory_banks(blob, &start, &size, 1);
 	if (ret) {
 		eprintf("Cannot setup fb: Error reserving memory\n");
