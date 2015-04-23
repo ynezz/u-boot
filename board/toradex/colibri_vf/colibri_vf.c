@@ -204,6 +204,11 @@ static void setup_iomux_gpio(void)
 		VF610_PAD_PTA21__GPIO_11,
 		VF610_PAD_PTA30__GPIO_20,
 		VF610_PAD_PTA31__GPIO_21,
+		VF610_PAD_PTB0__GPIO_22,
+		VF610_PAD_PTB1__GPIO_23,
+		VF610_PAD_PTB8__GPIO_30,
+		VF610_PAD_PTB9__GPIO_31,
+		VF610_PAD_PTC0__GPIO_45,
 	};
 
 	imx_iomux_v3_setup_multiple_pads(gpio_pads, ARRAY_SIZE(gpio_pads));
