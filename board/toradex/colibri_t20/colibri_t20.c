@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2012 Lucas Stach
+ * Copyright (c) 2011-2015 Toradex, Inc.
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -8,8 +8,158 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/funcmux.h>
 #include <asm/arch/pinmux.h>
+#include <asm/arch-tegra/ap.h>
 #include <asm/arch-tegra/board.h>
 #include <asm/gpio.h>
+#include <asm/io.h>
+#include <g_dnl.h>
+#include <i2c.h>
+#include <nand.h>
+
+#include "../common/configblock.h"
+
+DECLARE_GLOBAL_DATA_PTR;
+
+#define PMU_I2C_ADDRESS		0x34
+#define MAX_I2C_RETRY		3
+#define PMU_SUPPLYENE		0x14
+#define PMU_SUPPLYENE_SYSINEN	(1<<5)
+#define PMU_SUPPLYENE_EXITSLREQ	(1<<1)
+
+u32 get_board_rev(void);
+
+int arch_misc_init(void)
+{
+	/* Disable PMIC sleep mode on low supply voltage */
+	struct udevice *dev;
+	u8 addr, data[1];
+	int err;
+
+	err = i2c_get_chip_for_busnum(0, PMU_I2C_ADDRESS, 1, &dev);
+	if (err) {
+		debug("%s: Cannot find PMIC I2C chip\n", __func__);
+		return err;
+	}
+
+	addr = PMU_SUPPLYENE;
+
+	err = dm_i2c_read(dev, addr, data, 1);
+	if (err) {
+		debug("failed to get PMU_SUPPLYENE\n");
+		return err;
+	}
+
+	data[0] &= ~PMU_SUPPLYENE_SYSINEN;
+	data[0] |= PMU_SUPPLYENE_EXITSLREQ;
+
+	err = dm_i2c_write(dev, addr, data, 1);
+	if (err) {
+		debug("failed to set PMU_SUPPLYENE\n");
+		return err;
+	}
+
+	/* HW version */
+	if (!getenv("hw-version")) {
+		switch (get_board_rev()) {
+		case 0x011b:
+		case 0x011c:
+			setenv("hw-version", "v11");
+			break;
+		case 0x012a:
+			setenv("hw-version", "v12");
+			break;
+		default:
+			setenv("hw-version", (nand_info[0].erasesize >> 10
+					      == 512)?"v11":"v12");
+		}
+	}
+
+	/* Default memory arguments */
+	if (!getenv("memargs")) {
+		switch (gd->ram_size) {
+		case 0x10000000:
+			/* 256 MB */
+			setenv("memargs", "mem=148M@0M fbmem=12M@148M "
+			       "nvmem=96M@160M");
+			setenv("ram-size", "256");
+			break;
+		case 0x20000000:
+			/* 512 MB */
+			setenv("memargs", "mem=372M@0M fbmem=12M@372M "
+			       "nvmem=128M@384M");
+			setenv("ram-size", "512");
+			break;
+		default:
+			printf("Failed detecting RAM size.\n");
+		}
+	}
+
+	/* NAND parameters */
+	if (!getenv("leb-size")) {
+		switch (nand_info[0].erasesize >> 10) {
+		case 256:
+			/* 256 KiB */
+			setenv("leb-size", "248KiB");
+			break;
+		case 512:
+			/* 512 KiB */
+			setenv("leb-size", "504KiB");
+			break;
+		default:
+			printf("Failed detecting NAND block erase size.\n");
+		}
+	}
+
+	if (readl(NV_PA_BASE_SRAM + NVBOOTINFOTABLE_BOOTTYPE) ==
+	    NVBOOTTYPE_RECOVERY) {
+		printf("USB recovery mode, disabled autoboot\n");
+		setenv("bootdelay", "-1");
+	}
+
+	return 0;
+}
+
+int checkboard(void)
+{
+#ifdef CONFIG_TRDX_CFG_BLOCK
+	if (read_trdx_cfg_block())
+		printf("Missing Toradex config block\n");
+	else {
+		display_board_info();
+		return 0;
+	}
+#endif
+	printf("Model: Toradex Colibri T20 %dMB V%s\n",
+	       (gd->ram_size == 0x10000000)?256:512, (nand_info[0].erasesize >> 10
+		== 512)?((gd->ram_size == 0x10000000)?"1.1B":"1.1C"):"1.2A");
+
+	return 0;
+}
+
+int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
+{
+	unsigned short prodnr = 0;
+	unsigned short usb_pid;
+
+	get_board_product_number(&prodnr);
+
+	put_unaligned(CONFIG_TRDX_VID, &dev->idVendor);
+
+	if ((prodnr != 22) && (prodnr != 24))
+		if (gd->ram_size == 0x10000000)
+			usb_pid = CONFIG_TRDX_PID_COLIBRI_T20_256;
+		else
+			usb_pid = CONFIG_TRDX_PID_COLIBRI_T20_512;
+	else
+		if (gd->ram_size == 0x10000000)
+			usb_pid = CONFIG_TRDX_PID_COLIBRI_T20_256_IT;
+		else
+			usb_pid = CONFIG_TRDX_PID_COLIBRI_T20_512_IT;
+
+	put_unaligned(usb_pid, &dev->idProduct);
+
+	return 0;
+}
 
 #ifdef CONFIG_TEGRA_MMC
 /*
