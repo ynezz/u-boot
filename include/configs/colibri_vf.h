@@ -131,7 +131,7 @@
 #define CONFIG_MII
 #define IMX_FEC_BASE			ENET1_BASE_ADDR
 #define CONFIG_FEC_XCV_TYPE		RMII
-#define CONFIG_FEC_MXC_PHYADDR          0
+#define CONFIG_FEC_MXC_PHYADDR		0
 #define CONFIG_PHYLIB
 #define CONFIG_PHY_MICREL
 
@@ -170,7 +170,7 @@
 	"ubiargs=ubi.mtd=ubi root=ubi0:rootfs rootfstype=ubifs " \
 	"ubi.fm_autoconvert=1\0" \
 	"ubiboot=run setup; " \
-	"setenv bootargs ${defargs} ${ubiargs} ${mtdparts} "   \
+	"setenv bootargs ${defargs} ${ubiargs} ${mtdparts} " \
 	"${setupargs} ${vidargs}; echo Booting from NAND...; " \
 	"ubi part ubi && ubifsmount ubi0:rootfs && " \
 	"ubifsload ${kernel_addr_r} /boot/${kernel_file} && " \
@@ -280,15 +280,15 @@
 #define CONFIG_USB_GADGET
 #define CONFIG_CI_UDC
 #define CONFIG_USB_GADGET_DUALSPEED
-#define CONFIG_USB_GADGET_VBUS_DRAW 2
-#define CONFIG_TRDX_VID                   0x1B67
-#define CONFIG_TRDX_PID_COLIBRI_VF50      0x0016
-#define CONFIG_TRDX_PID_COLIBRI_VF61      0x0017
-#define CONFIG_TRDX_PID_COLIBRI_VF61IT    0x0018
-#define CONFIG_TRDX_PID_COLIBRI_VF50IT    0x0019
-#define CONFIG_G_DNL_MANUFACTURER         "Toradex"
-#define CONFIG_G_DNL_VENDOR_NUM           CONFIG_TRDX_VID
-#define CONFIG_G_DNL_PRODUCT_NUM          CONFIG_TRDX_PID_COLIBRI_VF50
+#define CONFIG_USB_GADGET_VBUS_DRAW	2
+#define CONFIG_TRDX_VID			0x1B67
+#define CONFIG_TRDX_PID_COLIBRI_VF50	0x0016
+#define CONFIG_TRDX_PID_COLIBRI_VF61	0x0017
+#define CONFIG_TRDX_PID_COLIBRI_VF61IT	0x0018
+#define CONFIG_TRDX_PID_COLIBRI_VF50IT	0x0019
+#define CONFIG_G_DNL_MANUFACTURER	"Toradex"
+#define CONFIG_G_DNL_VENDOR_NUM		CONFIG_TRDX_VID
+#define CONFIG_G_DNL_PRODUCT_NUM	CONFIG_TRDX_PID_COLIBRI_VF50
 
 /* USB DFU */
 #define CONFIG_USBDOWNLOAD_GADGET
