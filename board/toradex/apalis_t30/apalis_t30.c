@@ -120,6 +120,7 @@ int tegra_pcie_board_init(void)
 		debug("%s: Cannot find PMIC I2C chip\n", __func__);
 		return err;
 	}
+
 	/* TPS659110: VDD2_OP_REG = 1.05V */
 	data[0] = 0x27;
 	addr = 0x25;
