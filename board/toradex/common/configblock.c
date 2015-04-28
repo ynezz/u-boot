@@ -227,7 +227,7 @@ static int write_trdx_cfg_block_to_nand(unsigned char *config_block)
 {
 	size_t size = TRDX_CFG_BLOCK_MAX_SIZE;
 
-	/* Read production parameter config block from NAND page */
+	/* Write production parameter config block to NAND page */
 	return nand_write(&nand_info[0], CONFIG_TRDX_CFG_BLOCK_OFFSET,
 			  &size, config_block);
 }
