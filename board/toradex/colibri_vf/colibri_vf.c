@@ -22,7 +22,6 @@
 #include <miiphy.h>
 #include <netdev.h>
 #include <i2c.h>
-#include <g_dnl.h>
 #include <asm/gpio.h>
 
 #include "../common/configblock.h"
@@ -464,36 +463,12 @@ int board_init(void)
 	return 0;
 }
 
-int checkboard(void)
+int checkboard_fallback(void)
 {
-#ifdef CONFIG_TRDX_CFG_BLOCK
-	if (read_trdx_cfg_block())
-		printf("Missing Toradex config block\n");
-	else {
-		display_board_info();
-		return 0;
-	}
-#endif
 	if (is_colibri_vf61())
 		puts("Model: Toradex Colibri VF61 256MB\n");
 	else
 		puts("Model: Toradex Colibri VF50 128MB\n");
-
-	return 0;
-}
-
-int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
-{
-	unsigned short usb_pid;
-
-	put_unaligned(CONFIG_TRDX_VID, &dev->idVendor);
-
-	if (is_colibri_vf61())
-		usb_pid = CONFIG_TRDX_PID_COLIBRI_VF61IT;
-	else
-		usb_pid = CONFIG_TRDX_PID_COLIBRI_VF50IT;
-
-	put_unaligned(usb_pid, &dev->idProduct);
 
 	return 0;
 }

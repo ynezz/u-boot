@@ -4,6 +4,7 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+#include "configblock.h"
 #include <common.h>
 
 #include <cli.h>
@@ -33,54 +34,12 @@ struct toradex_tag {
 	u32 id : 16;
 };
 
-struct toradex_hw {
-	u16 ver_major;
-	u16 ver_minor;
-	u16 ver_assembly;
-	u16 prodid;
-};
-
-struct toradex_eth_addr {
-	u32 oui : 24;
-	u32 nic : 24;
-} __attribute__((__packed__));
-
 bool valid_cfgblock;
-struct toradex_hw toradex_hw_tag;
-struct toradex_eth_addr eth_addr;
-u32 toradex_serial;
+struct toradex_hw trdx_hw_tag;
+struct toradex_eth_addr trdx_eth_addr;
+u32 trdx_serial;
 
-enum {
-	COLIBRI_PXA320 = 3,
-	COLIBRI_PXA300,
-	COLIBRI_PXA310,
-	COLIBRI_PXA320_IT,
-	COLIBRI_PXA300_XT,
-	COLIBRI_PXA270_312MHZ,
-	COLIBRI_PXA270_520MHZ,
-	COLIBRI_VF50, /* not currently on sale */
-	COLIBRI_VF61,
-	COLIBRI_VF61_IT,
-	COLIBRI_VF50_IT,
-	COLIBRI_IMX6S,
-	COLIBRI_IMX6DL,
-	COLIBRI_IMX6S_IT,
-	COLIBRI_IMX6DL_IT,
-	COLIBRI_T20_256MB = 20,
-	COLIBRI_T20_512MB,
-	COLIBRI_T20_512MB_IT,
-	COLIBRI_T30,
-	COLIBRI_T20_256MB_IT,
-	APALIS_T30_2GB,
-	APALIS_T30_1GB,
-	APALIS_IMX6Q,
-	APALIS_IMX6Q_IT,
-	APALIS_IMX6D,
-	COLIBRI_T30_IT,
-	APALIS_T30_IT,
-};
-
-static const char* const toradex_modules[] = {
+const char* const toradex_modules[] = {
 	 [1] = "Colibri PXA270 312MHz",
 	 [2] = "Colibri PXA270 520MHz",
 	 [3] = "Colibri PXA320 806MHz",
@@ -111,53 +70,6 @@ static const char* const toradex_modules[] = {
 	[30] = "Colibri T30 1GB IT",
 	[31] = "Apalis T30 1GB IT",
 };
-
-#ifdef CONFIG_REVISION_TAG
-u32 get_board_rev(void)
-{
-	/* Check validity */
-	if (!toradex_hw_tag.ver_major)
-		return 0;
-
-	return ((toradex_hw_tag.ver_major & 0xff) << 8) |
-		((toradex_hw_tag.ver_minor & 0xf) << 4) |
-		((toradex_hw_tag.ver_assembly & 0xf) + 0xa);
-}
-#endif /* CONFIG_REVISION_TAG */
-
-#ifdef CONFIG_SERIAL_TAG
-void get_board_serial(struct tag_serialnr *serialnr)
-{
-	int array[8];
-	unsigned int serial = toradex_serial;
-	int i;
-
-	serialnr->low = 0;
-	serialnr->high = 0;
-
-	/* Check validity */
-	if (serial) {
-		/*
-		 * Convert to Linux serial number format (hexadecimal coded
-		 * decimal)
-		 */
-		i = 7;
-		while (serial) {
-			array[i--] = serial % 10;
-			serial /= 10;
-		}
-		while (i >= 0)
-			array[i--] = 0;
-		serial = array[0];
-		for (i = 1; i < 8; i++) {
-			serial *= 16;
-			serial += array[i];
-		}
-
-		serialnr->low = serial;
-	}
-}
-#endif /* CONFIG_SERIAL_TAG */
 
 #ifdef CONFIG_TRDX_CFG_BLOCK_IS_IN_MMC
 static int trdx_cfg_block_mmc_storage(u8 *config_block, int write)
@@ -281,13 +193,13 @@ int read_trdx_cfg_block(void)
 		switch (tag->id)
 		{
 		case TAG_MAC:
-			memcpy(&eth_addr, config_block + offset, 6);
+			memcpy(&trdx_eth_addr, config_block + offset, 6);
 
 			/* NIC part of MAC address is serial number */
-			toradex_serial = ntohl(eth_addr.nic) >> 8;
+			trdx_serial = ntohl(trdx_eth_addr.nic) >> 8;
 
 			/* board serial-number */
-			sprintf(serial, "%08u", toradex_serial);
+			sprintf(serial, "%08u", trdx_serial);
 			setenv("serial#", serial);
 
 			/*
@@ -295,7 +207,7 @@ int read_trdx_cfg_block(void)
 			 * set the one from config block if not
 			 */
 			if (!eth_getenv_enetaddr("ethaddr", ethaddr))
-				eth_setenv_enetaddr("ethaddr", (u8 *)&eth_addr);
+				eth_setenv_enetaddr("ethaddr", (u8 *)&trdx_eth_addr);
 
 #ifdef CONFIG_TRDX_CFG_BLOCK_2ND_ETHADDR
 			if (!eth_getenv_enetaddr("eth1addr", ethaddr)) {
@@ -303,14 +215,14 @@ int read_trdx_cfg_block(void)
 				 * Secondary MAC address is allocated from block
 				 * 0x100000 higher then the first MAC address
 				 */
-				memcpy(ethaddr, &eth_addr, 6);
+				memcpy(ethaddr, &trdx_eth_addr, 6);
 				ethaddr[3] += 0x10;
 				eth_setenv_enetaddr("eth1addr", ethaddr);
 			}
 #endif
 			break;
 		case TAG_HW:
-			memcpy(&toradex_hw_tag, config_block + offset, 8);
+			memcpy(&trdx_hw_tag, config_block + offset, 8);
 			break;
 		}
 
@@ -321,30 +233,6 @@ int read_trdx_cfg_block(void)
 out:
 	free(config_block);
 	return ret;
-}
-
-void display_board_info(void)
-{
-	printf("Model: Toradex %s V%d.%d%c\n",
-		toradex_modules[toradex_hw_tag.prodid],
-		toradex_hw_tag.ver_major,
-		toradex_hw_tag.ver_minor,
-		(char)toradex_hw_tag.ver_assembly + 'A');
-}
-
-void get_board_serial_char(char *serialnr)
-{
-	if (!toradex_serial) {
-		strcpy(serialnr, "UNKNOWN");
-		return;
-	}
-
-	sprintf(serialnr, "%u", toradex_serial);
-}
-
-void get_board_product_number(unsigned short *prodnr)
-{
-	*prodnr = toradex_hw_tag.prodid;
 }
 
 static int get_cfgblock_interactive(void)
@@ -365,41 +253,41 @@ static int get_cfgblock_interactive(void)
 	} else if (!strcmp("tegra20", soc)) {
 		if (it == 'y' || it == 'Y')
 			if (gd->ram_size == 0x10000000)
-				toradex_hw_tag.prodid = COLIBRI_T20_256MB_IT;
+				trdx_hw_tag.prodid = COLIBRI_T20_256MB_IT;
 			else
-				toradex_hw_tag.prodid = COLIBRI_T20_512MB_IT;
+				trdx_hw_tag.prodid = COLIBRI_T20_512MB_IT;
 		else
 			if (gd->ram_size == 0x10000000)
-				toradex_hw_tag.prodid = COLIBRI_T20_256MB;
+				trdx_hw_tag.prodid = COLIBRI_T20_256MB;
 			else
-				toradex_hw_tag.prodid = COLIBRI_T20_512MB;
+				trdx_hw_tag.prodid = COLIBRI_T20_512MB;
 #ifdef CONFIG_MACH_TYPE
 	} else if (!strcmp("tegra30", soc)) {
 		if (CONFIG_MACH_TYPE == MACH_TYPE_APALIS_T30) {
 			if (it == 'y' || it == 'Y')
-				toradex_hw_tag.prodid = APALIS_T30_IT;
+				trdx_hw_tag.prodid = APALIS_T30_IT;
 			else
 				if (gd->ram_size == 0x40000000)
-					toradex_hw_tag.prodid = APALIS_T30_1GB;
+					trdx_hw_tag.prodid = APALIS_T30_1GB;
 				else
-					toradex_hw_tag.prodid = APALIS_T30_2GB;
+					trdx_hw_tag.prodid = APALIS_T30_2GB;
 		} else {
 			if (it == 'y' || it == 'Y')
-				toradex_hw_tag.prodid = COLIBRI_T30_IT;
+				trdx_hw_tag.prodid = COLIBRI_T30_IT;
 			else
-				toradex_hw_tag.prodid = COLIBRI_T30;
+				trdx_hw_tag.prodid = COLIBRI_T30;
 		}
 #endif /* CONFIG_MACH_TYPE */
 	} else if (!strcmp("vf500", soc)) {
 		if (it == 'y' || it == 'Y')
-			toradex_hw_tag.prodid = COLIBRI_VF50_IT;
+			trdx_hw_tag.prodid = COLIBRI_VF50_IT;
 		else
-			toradex_hw_tag.prodid = COLIBRI_VF50;
+			trdx_hw_tag.prodid = COLIBRI_VF50;
 	} else if (!strcmp("vf610", soc)) {
 		if (it == 'y' || it == 'Y')
-			toradex_hw_tag.prodid = COLIBRI_VF61_IT;
+			trdx_hw_tag.prodid = COLIBRI_VF61_IT;
 		else
-			toradex_hw_tag.prodid = COLIBRI_VF61;
+			trdx_hw_tag.prodid = COLIBRI_VF61;
 	} else {
 		printf("Module type not detectable due to unknown SoC\n");
 		return -1;
@@ -410,16 +298,16 @@ static int get_cfgblock_interactive(void)
 		len = cli_readline(message);
 	}
 
-	toradex_hw_tag.ver_major = console_buffer[0] - '0';
-	toradex_hw_tag.ver_minor = console_buffer[2] - '0';
-	toradex_hw_tag.ver_assembly = console_buffer[3] - 'A';
+	trdx_hw_tag.ver_major = console_buffer[0] - '0';
+	trdx_hw_tag.ver_minor = console_buffer[2] - '0';
+	trdx_hw_tag.ver_assembly = console_buffer[3] - 'A';
 
 	while (len < 8) {
 		sprintf(message, "Enter module serial number: ");
 		len = cli_readline(message);
 	}
 
-	toradex_serial = simple_strtoul(console_buffer, NULL, 10);
+	trdx_serial = simple_strtoul(console_buffer, NULL, 10);
 
 	return 0;
 }
@@ -432,16 +320,16 @@ static int get_cfgblock_barcode(char *barcode)
 	}
 
 	/* Get hardware information from the first 8 digits */
-	toradex_hw_tag.ver_major = barcode[4] - '0';
-	toradex_hw_tag.ver_minor = barcode[5] - '0';
-	toradex_hw_tag.ver_assembly = barcode[7] - '0';
+	trdx_hw_tag.ver_major = barcode[4] - '0';
+	trdx_hw_tag.ver_minor = barcode[5] - '0';
+	trdx_hw_tag.ver_assembly = barcode[7] - '0';
 
 	barcode[4] = '\0';
-	toradex_hw_tag.prodid = simple_strtoul(barcode, NULL, 10);
+	trdx_hw_tag.prodid = simple_strtoul(barcode, NULL, 10);
 
 	/* Parse second part of the barcode (serial number */
 	barcode += 8;
-	toradex_serial = simple_strtoul(barcode, NULL, 10);
+	trdx_serial = simple_strtoul(barcode, NULL, 10);
 
 	return 0;
 }
@@ -503,8 +391,8 @@ static int do_cfgblock_create(cmd_tbl_t *cmdtp, int flag, int argc,
 		goto out;
 
 	/* Convert serial number to MAC address (the storage format) */
-	eth_addr.oui = htonl(0x00142dUL << 8);
-	eth_addr.nic = htonl(toradex_serial << 8);
+	trdx_eth_addr.oui = htonl(0x00142dUL << 8);
+	trdx_eth_addr.nic = htonl(trdx_serial << 8);
 
 	/* Valid Tag */
 	tag = (struct toradex_tag *)config_block;
@@ -520,7 +408,7 @@ static int do_cfgblock_create(cmd_tbl_t *cmdtp, int flag, int argc,
 	tag->len = 2;
 	offset += 4;
 
-	memcpy(config_block + offset, &toradex_hw_tag, 8);
+	memcpy(config_block + offset, &trdx_hw_tag, 8);
 	offset += 8;
 
 	/* MAC Tag */
@@ -530,7 +418,7 @@ static int do_cfgblock_create(cmd_tbl_t *cmdtp, int flag, int argc,
 	tag->len = 2;
 	offset += 4;
 
-	memcpy(config_block + offset, &eth_addr, 6);
+	memcpy(config_block + offset, &trdx_eth_addr, 6);
 	offset +=6;
 	memset(config_block + offset, 0, 32 - offset);
 

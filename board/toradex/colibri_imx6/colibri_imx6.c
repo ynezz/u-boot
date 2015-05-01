@@ -552,37 +552,10 @@ int board_late_init(void)
 }
 #endif /* CONFIG_BOARD_LATE_INIT */
 
-int checkboard(void)
+int checkboard_fallback(void)
 {
-#ifdef CONFIG_TRDX_CFG_BLOCK
-	if (read_trdx_cfg_block())
-		printf("Missing Toradex config block\n");
-	else {
-		display_board_info();
-		return 0;
-	}
-#endif
-	printf("Model: Toradex Colibri iMX6 %sMB\n", (gd->ram_size == 0x20000000)?"512":"256");
-	return 0;
-}
-
-int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
-{
-	unsigned short prodnr = 0;
-	unsigned short usb_pid;
-	/* assume a maximum 64bit serial */
-	char serialnr[21];
-
-	get_board_product_number(&prodnr);
-
-	put_unaligned(CONFIG_TRDX_VID, &dev->idVendor);
-
-	usb_pid = prodnr + 0x100;
-	put_unaligned(usb_pid, &dev->idProduct);
-
-	get_board_serial_char(serialnr);
-	g_dnl_set_serialnumber(serialnr);
-
+	printf("Model: Toradex Colibri iMX6 %sMB\n",
+		(gd->ram_size == 0x20000000) ? "512" : "256");
 	return 0;
 }
 

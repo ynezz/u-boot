@@ -54,13 +54,9 @@
 #define CONFIG_SYS_MMC_ENV_PART		2
 
 /* USB client support */
-#define CONFIG_TRDX_VID				0x1B67
-/* TBD */
-#define CONFIG_TRDX_PID_COLIBRI_T30		0x001E
-#define CONFIG_TRDX_PID_COLIBRI_T30_IT		0x001F
-#define CONFIG_G_DNL_MANUFACTURER		"Toradex"
-#define CONFIG_G_DNL_VENDOR_NUM			CONFIG_TRDX_VID
-#define CONFIG_G_DNL_PRODUCT_NUM		CONFIG_TRDX_PID_COLIBRI_T30
+#define CONFIG_G_DNL_MANUFACTURER	"Toradex"
+#define CONFIG_G_DNL_VENDOR_NUM		0x1b67
+#define CONFIG_G_DNL_PRODUCT_NUM	0xffff /* Fallback, set using fixup */
 
 /* USB host support */
 #define CONFIG_USB_EHCI

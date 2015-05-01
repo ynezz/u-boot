@@ -12,7 +12,6 @@
 #include <asm/arch-tegra/board.h>
 #include <asm/gpio.h>
 #include <asm/io.h>
-#include <g_dnl.h>
 #include <i2c.h>
 #include <nand.h>
 
@@ -119,44 +118,11 @@ int arch_misc_init(void)
 	return 0;
 }
 
-int checkboard(void)
+int checkboard_fallback(void)
 {
-#ifdef CONFIG_TRDX_CFG_BLOCK
-	if (read_trdx_cfg_block())
-		printf("Missing Toradex config block\n");
-	else {
-		display_board_info();
-		return 0;
-	}
-#endif
 	printf("Model: Toradex Colibri T20 %dMB V%s\n",
 	       (gd->ram_size == 0x10000000)?256:512, (nand_info[0].erasesize >> 10
 		== 512)?((gd->ram_size == 0x10000000)?"1.1B":"1.1C"):"1.2A");
-
-	return 0;
-}
-
-int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
-{
-	unsigned short prodnr = 0;
-	unsigned short usb_pid;
-
-	get_board_product_number(&prodnr);
-
-	put_unaligned(CONFIG_TRDX_VID, &dev->idVendor);
-
-	if ((prodnr != 22) && (prodnr != 24))
-		if (gd->ram_size == 0x10000000)
-			usb_pid = CONFIG_TRDX_PID_COLIBRI_T20_256;
-		else
-			usb_pid = CONFIG_TRDX_PID_COLIBRI_T20_512;
-	else
-		if (gd->ram_size == 0x10000000)
-			usb_pid = CONFIG_TRDX_PID_COLIBRI_T20_256_IT;
-		else
-			usb_pid = CONFIG_TRDX_PID_COLIBRI_T20_512_IT;
-
-	put_unaligned(usb_pid, &dev->idProduct);
 
 	return 0;
 }
