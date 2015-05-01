@@ -209,8 +209,8 @@
 	"setusbupdate=usb start && setenv interface usb; setenv drive 0; " \
 		"load ${interface} ${drive}:1 ${kernel_addr_r} " \
 		"flash_blk.img\0" \
-	"setupdate=run setsdupdate || run setusbupdate || run setethupdate &&" \
-		" source ${loadaddr}\0" \
+	"setupdate=run setsdupdate || run setusbupdate || run setethupdate;" \
+		" source ${kernel_addr_r}\0" \
 	UBI_BOOTCMD \
 	USB_BOOTCMD \
 	"vidargs=video=tegrafb0:640x480-16@60\0"
