@@ -161,6 +161,11 @@ static void usb_oc_config(int index)
 	__raw_writel(val, ctrl);
 }
 
+int __weak board_ehci_hcd_init(int port)
+{
+	return 0;
+}
+
 int ehci_hcd_init(int index, enum usb_init_type init,
 		struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 {
@@ -175,6 +180,9 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 		return -ENODEV;
 
 	ehci = (struct usb_ehci *)nc_reg_bases[index];
+
+	/* Do board specific initialisation */
+	board_ehci_hcd_init(index);
 
 	usb_power_config(index);
 	usb_oc_config(index);
