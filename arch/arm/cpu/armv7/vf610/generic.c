@@ -327,7 +327,7 @@ void boot_mode_apply(unsigned cfg_val)
 const struct boot_mode soc_boot_modes[] = {
 	{"normal",	MAKE_CFGVAL(0x00, 0x00, 0x00, 0x00)},
 	/* reserved value should start ROM's serial loader */
-	{"ser",		MAKE_CFGVAL(0x40, 0x00, 0x00, 0x00)},
+	{"serial",	MAKE_CFGVAL(0x40, 0x00, 0x00, 0x00)},
 	/* 4 bit bus width */
 	{"esdhc0",	MAKE_CFGVAL(0x60, 0x20, 0x00, 0x00)},
 	{"esdhc1",	MAKE_CFGVAL(0x60, 0x28, 0x00, 0x00)},

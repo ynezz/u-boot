@@ -401,7 +401,8 @@ int board_early_init_f(void)
 
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {
-	{"nand", MAKE_CFGVAL(0x80, 0x02, 0x00, 0x00)},
+	{"nand",	MAKE_CFGVAL(0x80, 0x02, 0x00, 0x00)},
+	{"mmc",		MAKE_CFGVAL(0x60, 0x28, 0x00, 0x00)},
 	{NULL,	 0},
 };
 #endif
