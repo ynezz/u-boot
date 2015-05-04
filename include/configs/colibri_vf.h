@@ -118,7 +118,6 @@
 #define CONFIG_RBTREE
 #define CONFIG_LZO
 #define CONFIG_CMD_FS_GENERIC
-#define CONFIG_CMD_BOOTZ
 #define CONFIG_CMD_UBI
 #define CONFIG_MTD_UBI_FASTMAP
 #define CONFIG_CMD_UBIFS	/* increases size by almost 60 KB */
@@ -191,7 +190,7 @@
 	"console=ttyLP0\0" \
 	"setup=setenv setupargs " \
 		"console=tty1 console=${console}" \
-		",${baudrate}n8 ${memargs}\0" \
+		",${baudrate}n8 ${memargs} consoleblank=0\0" \
 	"setsdupdate=mmc rescan && setenv interface mmc && " \
 		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
 		"source ${loadaddr}\0" \
@@ -264,6 +263,8 @@
 
 #define CONFIG_OF_LIBFDT
 #define CONFIG_CMD_BOOTZ
+#define CONFIG_SUPPORT_RAW_INITRD
+#define CONFIG_SYS_BOOT_RAMDISK_HIGH
 
 #define CONFIG_SYS_NO_FLASH
 
