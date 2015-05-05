@@ -95,17 +95,18 @@
 #define MTDIDS_DEFAULT		"nand0=tegra_nand"
 #define MTDPARTS_DEFAULT	"mtdparts=tegra_nand:"		\
 				"2m(u-boot)ro,"			\
-				"512k(cfgblock)ro,"		\
-				"512k(u-boot-env),"		\
+				"1m(u-boot-env),"		\
+				"1m(cfgblock)ro,"		\
 				"-(ubi)"
 
 #undef CONFIG_CMD_IMLS
 
 /* Environment in NAND, 64K is a bit excessive but erase block is 512K anyway */
 #define CONFIG_ENV_IS_IN_NAND
-#define CONFIG_ENV_OFFSET		(SZ_2M + SZ_512K)
+#define CONFIG_ENV_OFFSET		(SZ_2M)
 #undef CONFIG_ENV_SIZE	/* undef size from tegra20-common.h */
 #define CONFIG_ENV_SIZE			(SZ_64K)
+#define CONFIG_ENV_RANGE		(SZ_1M)
 
 #define CONFIG_RBTREE
 #define CONFIG_LZO

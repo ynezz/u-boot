@@ -16,6 +16,6 @@ config TRDX_HAVE_NAND
 	default y
 
 config TRDX_CFG_BLOCK_OFFSET
-	default "2097152"
+	default "3145728"
 
 endif
