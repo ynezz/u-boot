@@ -68,6 +68,8 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define OUTPUT_40OHM (PAD_CTL_SPEED_MED|PAD_CTL_DSE_40ohm)
 
+#define OUTPUT_RGB (PAD_CTL_SPEED_MED|PAD_CTL_DSE_60ohm|PAD_CTL_SRE_FAST)
+
 u32 get_board_rev(void);
 
 int dram_init(void)
@@ -339,28 +341,28 @@ static iomux_v3_cfg_t const backlight_pads[] = {
 };
 
 static iomux_v3_cfg_t const rgb_pads[] = {
-		MX6_PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK,
-		MX6_PAD_DI0_PIN15__IPU1_DI0_PIN15,
-		MX6_PAD_DI0_PIN2__IPU1_DI0_PIN02,
-		MX6_PAD_DI0_PIN3__IPU1_DI0_PIN03,
-		MX6_PAD_DISP0_DAT0__IPU1_DISP0_DATA00,
-		MX6_PAD_DISP0_DAT1__IPU1_DISP0_DATA01,
-		MX6_PAD_DISP0_DAT2__IPU1_DISP0_DATA02,
-		MX6_PAD_DISP0_DAT3__IPU1_DISP0_DATA03,
-		MX6_PAD_DISP0_DAT4__IPU1_DISP0_DATA04,
-		MX6_PAD_DISP0_DAT5__IPU1_DISP0_DATA05,
-		MX6_PAD_DISP0_DAT6__IPU1_DISP0_DATA06,
-		MX6_PAD_DISP0_DAT7__IPU1_DISP0_DATA07,
-		MX6_PAD_DISP0_DAT8__IPU1_DISP0_DATA08,
-		MX6_PAD_DISP0_DAT9__IPU1_DISP0_DATA09,
-		MX6_PAD_DISP0_DAT10__IPU1_DISP0_DATA10,
-		MX6_PAD_DISP0_DAT11__IPU1_DISP0_DATA11,
-		MX6_PAD_DISP0_DAT12__IPU1_DISP0_DATA12,
-		MX6_PAD_DISP0_DAT13__IPU1_DISP0_DATA13,
-		MX6_PAD_DISP0_DAT14__IPU1_DISP0_DATA14,
-		MX6_PAD_DISP0_DAT15__IPU1_DISP0_DATA15,
-		MX6_PAD_DISP0_DAT16__IPU1_DISP0_DATA16,
-		MX6_PAD_DISP0_DAT17__IPU1_DISP0_DATA17,
+		MX6_PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DI0_PIN15__IPU1_DI0_PIN15 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DI0_PIN2__IPU1_DI0_PIN02 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DI0_PIN3__IPU1_DI0_PIN03 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT0__IPU1_DISP0_DATA00 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT1__IPU1_DISP0_DATA01 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT2__IPU1_DISP0_DATA02 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT3__IPU1_DISP0_DATA03 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT4__IPU1_DISP0_DATA04 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT5__IPU1_DISP0_DATA05 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT6__IPU1_DISP0_DATA06 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT7__IPU1_DISP0_DATA07 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT8__IPU1_DISP0_DATA08 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT9__IPU1_DISP0_DATA09 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT10__IPU1_DISP0_DATA10 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT11__IPU1_DISP0_DATA11 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT12__IPU1_DISP0_DATA12 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT13__IPU1_DISP0_DATA13 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT14__IPU1_DISP0_DATA14 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT15__IPU1_DISP0_DATA15 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT16__IPU1_DISP0_DATA16 | MUX_PAD_CTRL(OUTPUT_RGB),
+		MX6_PAD_DISP0_DAT17__IPU1_DISP0_DATA17 | MUX_PAD_CTRL(OUTPUT_RGB),
 };
 
 static void do_enable_hdmi(struct display_info_t const *dev)
@@ -375,6 +377,12 @@ static void enable_rgb(struct display_info_t const *dev)
 		ARRAY_SIZE(rgb_pads));
 	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
 	gpio_direction_output(RGB_BACKLIGHTPWM_GP, 0);
+}
+
+static int detect_default(struct display_info_t const *dev)
+{
+	(void) dev;
+	return 1;
 }
 
 struct display_info_t const displays[] = {{
@@ -401,18 +409,18 @@ struct display_info_t const displays[] = {{
 	.bus	= -1,
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= NULL,
+	.detect	= detect_default,
 	.enable	= enable_rgb,
 	.mode	= {
 		.name           = "vga-rgb",
 		.refresh        = 60,
 		.xres           = 640,
 		.yres           = 480,
-		.pixclock       = 39682,
+		.pixclock       = 33000,
 		.left_margin    = 48,
 		.right_margin   = 16,
-		.upper_margin   = 33,
-		.lower_margin   = 10,
+		.upper_margin   = 31,
+		.lower_margin   = 11,
 		.hsync_len      = 96,
 		.vsync_len      = 2,
 		.sync           = 0,
@@ -421,20 +429,19 @@ struct display_info_t const displays[] = {{
 	.bus	= -1,
 	.addr	= 0,
 	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= NULL,
 	.enable	= enable_rgb,
 	.mode	= {
 		.name           = "wvga-rgb",
-		.refresh        = 57,
+		.refresh        = 60,
 		.xres           = 800,
 		.yres           = 480,
-		.pixclock       = 37037,
+		.pixclock       = 25000,
 		.left_margin    = 40,
-		.right_margin   = 60,
-		.upper_margin   = 10,
+		.right_margin   = 88,
+		.upper_margin   = 33,
 		.lower_margin   = 10,
-		.hsync_len      = 20,
-		.vsync_len      = 10,
+		.hsync_len      = 128,
+		.vsync_len      = 2,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
 } } };
