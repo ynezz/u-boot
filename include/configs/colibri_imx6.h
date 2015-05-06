@@ -137,13 +137,16 @@
 #define CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE
 #define CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_SPLASH_SCREEN
+#define CONFIG_SPLASH_SCREEN_ALIGN
 #define CONFIG_BMP_16BPP
 #define CONFIG_VIDEO_LOGO
+#define CONFIG_VIDEO_BMP_LOGO
 #define CONFIG_IPUV3_CLK		260000000
 #define CONFIG_CMD_HDMIDETECT
 #define CONFIG_CONSOLE_MUX
 #define CONFIG_IMX_HDMI
 #define CONFIG_IMX_VIDEO_SKIP
+#define CONFIG_CMD_BMP
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
@@ -258,6 +261,7 @@
 	"setusbupdate=usb start && setenv interface usb; setenv drive 0; " \
 		"load ${interface} ${drive}:1 ${kernel_addr_r} " \
 		"flash_blk.img\0" \
+	"splashpos=m,m\0" \
 	"vidargs=video=mxcfb0:dev=lcd,640x480M@60,if=RGB666 " \
 		"video=mxcfb1:off fbmem=8M\0 "
 
@@ -310,8 +314,6 @@
 #ifndef CONFIG_SYS_DCACHE_OFF
 #define CONFIG_CMD_CACHE
 #endif
-
-#define CONFIG_CMD_BMP
 
 #define CONFIG_CMD_TIME
 
