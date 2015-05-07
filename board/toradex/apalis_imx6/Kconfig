@@ -30,4 +30,13 @@ config TRDX_CFG_BLOCK_PART
 config TRDX_CFG_BLOCK_OFFSET
 	default "655360"
 
+menuconfig TRDX_CMD_IMX_MFGR
+	bool "Enable factory testing commands for Toradex iMX 6 modules"
+	help
+	  This adds the commands
+	    mfgr_fuse: OTP fusing during module production
+	    pf0100_otp_prog- Program the OTP fuses on the PMIC PF0100
+	  If executed on already fused modules they don't change any fuse setting.
+	default y
+
 endif

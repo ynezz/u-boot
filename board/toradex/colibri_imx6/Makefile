@@ -2,5 +2,5 @@
 # SPDX-License-Identifier:      GPL-2.0+
 
 obj-y  := colibri_imx6.o
-obj-y  += pf0100.o
-obj-y  += do_fuse.o
+obj-$(CONFIG_TRDX_CMD_IMX_MFGR)  += pf0100.o
+obj-$(CONFIG_TRDX_CMD_IMX_MFGR)  += do_fuse.o

@@ -29,11 +29,12 @@
 #include <netdev.h>
 #include <asm/arch/crm_regs.h>
 #include <asm/arch/mxc_hdmi.h>
-#include <g_dnl.h>
 #include <i2c.h>
 
 #include "../common/configblock.h"
+#ifdef TRDX_CMD_IMX_MFGR
 #include "pf0100.h"
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -534,7 +535,9 @@ int board_init(void)
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info_loc);
 
+#ifdef TRDX_CMD_IMX_MFGR
 	(void) pmic_init();
+#endif
 
 #ifdef CONFIG_CMD_SATA
 	setup_sata();
