@@ -248,8 +248,26 @@ static int get_cfgblock_interactive(void)
 
 	soc = getenv("soc");
 	if (!strcmp("mx6", soc)) {
-		printf("Interactive mode on iMX6 modules not yet supported\n");
-		return -1;
+#ifdef CONFIG_MACH_TYPE
+		if (it == 'y' || it == 'Y')
+			trdx_hw_tag.prodid = APALIS_IMX6Q_IT;
+		else
+			if (gd->ram_size == 0x40000000)
+				trdx_hw_tag.prodid = APALIS_IMX6Q;
+			else
+				trdx_hw_tag.prodid = APALIS_IMX6D;
+#else
+		if (it == 'y' || it == 'Y')
+			if (gd->ram_size == 0x20000000)
+				trdx_hw_tag.prodid = COLIBRI_IMX6DL_IT;
+			else
+				trdx_hw_tag.prodid = COLIBRI_IMX6S_IT;
+                else
+			if (gd->ram_size == 0x20000000)
+				trdx_hw_tag.prodid = COLIBRI_IMX6DL;
+			else
+				trdx_hw_tag.prodid = COLIBRI_IMX6S;
+#endif /* CONFIG_MACH_TYPE */
 	} else if (!strcmp("tegra20", soc)) {
 		if (it == 'y' || it == 'Y')
 			if (gd->ram_size == 0x10000000)
