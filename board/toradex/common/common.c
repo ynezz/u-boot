@@ -7,6 +7,7 @@
 #include "configblock.h"
 #include <common.h>
 #include <g_dnl.h>
+#include <libfdt.h>
 
 static char trdx_serial_str[9];
 
@@ -135,3 +136,14 @@ int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
 	return 0;
 }
 #endif /* CONFIG_USBDOWNLOAD_GADGET */
+
+#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_SYSTEM_SETUP) && \
+	defined(CONFIG_TRDX_CFG_BLOCK)
+int ft_system_setup(void *blob, bd_t *bd)
+{
+	fdt_setprop(blob, 0, "serial-number", trdx_serial_str,
+		    strlen(trdx_serial_str) + 1);
+
+	return 0;
+}
+#endif

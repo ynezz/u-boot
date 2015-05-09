@@ -477,11 +477,6 @@ int checkboard_fallback(void)
 #if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
 int ft_board_setup(void *blob, bd_t *bd)
 {
-#ifdef CONFIG_TRDX_CFG_BLOCK
-	fdt_setprop(blob, 0, "serial-number", getenv("serial#"),
-		    strlen(getenv("serial#")) + 1);
-#endif
-
 	return fsl_dcu_fixedfb_setup(blob);
 }
 #endif
