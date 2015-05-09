@@ -10,6 +10,7 @@
 #include <libfdt.h>
 
 static char trdx_serial_str[9];
+static char trdx_board_rev_str[6];
 
 __weak int checkboard_fallback(void)
 {
@@ -90,6 +91,12 @@ int checkboard(void)
 
 	/* board serial-number */
 	sprintf(trdx_serial_str, "%08u", trdx_serial);
+	sprintf(trdx_board_rev_str, "V%1d.%1d%c",
+		trdx_hw_tag.ver_major,
+		trdx_hw_tag.ver_minor,
+		(char)trdx_hw_tag.ver_assembly + 'A');
+
+
 	setenv("serial#", trdx_serial_str);
 
 	/*
@@ -111,12 +118,10 @@ int checkboard(void)
 	}
 #endif
 
-	printf("Model: Toradex %s V%d.%d%c, Serial# %08u\n",
+	printf("Model: Toradex %s %s, Serial# %s\n",
 		toradex_modules[trdx_hw_tag.prodid],
-		trdx_hw_tag.ver_major,
-		trdx_hw_tag.ver_minor,
-		(char)trdx_hw_tag.ver_assembly + 'A',
-		trdx_serial);
+		trdx_board_rev_str,
+		trdx_serial_str);
 #else
 	checkboard_fallback();
 #endif
@@ -141,8 +146,20 @@ int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
 	defined(CONFIG_TRDX_CFG_BLOCK)
 int ft_system_setup(void *blob, bd_t *bd)
 {
-	fdt_setprop(blob, 0, "serial-number", trdx_serial_str,
-		    strlen(trdx_serial_str) + 1);
+	if (trdx_serial) {
+		fdt_setprop(blob, 0, "serial-number", trdx_serial_str,
+			    strlen(trdx_serial_str) + 1);
+	}
+
+	if (trdx_hw_tag.ver_major) {
+		char prod_id[5];
+
+		sprintf(prod_id, "%04u", trdx_hw_tag.prodid);
+		fdt_setprop(blob, 0, "toradex,product-id", prod_id, 5);
+
+		fdt_setprop(blob, 0, "toradex,board-rev", trdx_board_rev_str,
+			    strlen(trdx_board_rev_str) + 1);
+	}
 
 	return 0;
 }
