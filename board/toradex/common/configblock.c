@@ -152,8 +152,6 @@ int read_trdx_cfg_block(void)
 	struct toradex_tag *tag;
 	size_t size = TRDX_CFG_BLOCK_MAX_SIZE;
 	int offset;
-	unsigned char ethaddr[6];
-	char serial[9];
 
 	/* Allocate RAM area for config block */
 	config_block = memalign(ARCH_DMA_MINALIGN, size);
@@ -197,29 +195,6 @@ int read_trdx_cfg_block(void)
 
 			/* NIC part of MAC address is serial number */
 			trdx_serial = ntohl(trdx_eth_addr.nic) >> 8;
-
-			/* board serial-number */
-			sprintf(serial, "%08u", trdx_serial);
-			setenv("serial#", serial);
-
-			/*
-			 * Check if environment contains a valid MAC address,
-			 * set the one from config block if not
-			 */
-			if (!eth_getenv_enetaddr("ethaddr", ethaddr))
-				eth_setenv_enetaddr("ethaddr", (u8 *)&trdx_eth_addr);
-
-#ifdef CONFIG_TRDX_CFG_BLOCK_2ND_ETHADDR
-			if (!eth_getenv_enetaddr("eth1addr", ethaddr)) {
-				/*
-				 * Secondary MAC address is allocated from block
-				 * 0x100000 higher then the first MAC address
-				 */
-				memcpy(ethaddr, &trdx_eth_addr, 6);
-				ethaddr[3] += 0x10;
-				eth_setenv_enetaddr("eth1addr", ethaddr);
-			}
-#endif
 			break;
 		case TAG_HW:
 			memcpy(&trdx_hw_tag, config_block + offset, 8);

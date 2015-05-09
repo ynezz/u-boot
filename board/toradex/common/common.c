@@ -8,6 +8,8 @@
 #include <common.h>
 #include <g_dnl.h>
 
+static char trdx_serial_str[9];
+
 __weak int checkboard_fallback(void)
 {
 	return 0;
@@ -77,17 +79,43 @@ u32 get_board_rev(void)
 int checkboard(void)
 {
 #ifdef CONFIG_TRDX_CFG_BLOCK
+	unsigned char ethaddr[6];
+
 	if (read_trdx_cfg_block()) {
 		printf("Missing Toradex config block\n");
 		checkboard_fallback();
 		return 0;
 	}
 
-	printf("Model: Toradex %s V%d.%d%c\n",
+	/* board serial-number */
+	sprintf(trdx_serial_str, "%08u", trdx_serial);
+	setenv("serial#", trdx_serial_str);
+
+	/*
+	 * Check if environment contains a valid MAC address,
+	 * set the one from config block if not
+	 */
+	if (!eth_getenv_enetaddr("ethaddr", ethaddr))
+		eth_setenv_enetaddr("ethaddr", (u8 *)&trdx_eth_addr);
+
+#ifdef CONFIG_TRDX_CFG_BLOCK_2ND_ETHADDR
+	if (!eth_getenv_enetaddr("eth1addr", ethaddr)) {
+		/*
+		 * Secondary MAC address is allocated from block
+		 * 0x100000 higher then the first MAC address
+		 */
+		memcpy(ethaddr, &trdx_eth_addr, 6);
+		ethaddr[3] += 0x10;
+		eth_setenv_enetaddr("eth1addr", ethaddr);
+	}
+#endif
+
+	printf("Model: Toradex %s V%d.%d%c, Serial# %08u\n",
 		toradex_modules[trdx_hw_tag.prodid],
 		trdx_hw_tag.ver_major,
 		trdx_hw_tag.ver_minor,
-		(char)trdx_hw_tag.ver_assembly + 'A');
+		(char)trdx_hw_tag.ver_assembly + 'A',
+		trdx_serial);
 #else
 	checkboard_fallback();
 #endif
