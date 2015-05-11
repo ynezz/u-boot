@@ -11,16 +11,16 @@
 
 #define TORADEX_USB_PRODUCT_NUM_OFFSET 0x4000
 
-static char trdx_serial_str[9];
-static char trdx_board_rev_str[6];
-
 __weak int checkboard_fallback(void)
 {
 	return 0;
 }
 
-#ifdef CONFIG_REVISION_TAG
 #ifdef CONFIG_TRDX_CFG_BLOCK
+static char trdx_serial_str[9];
+static char trdx_board_rev_str[6];
+
+#ifdef CONFIG_REVISION_TAG
 u32 get_board_rev(void)
 {
 	/* Check validity */
@@ -31,16 +31,9 @@ u32 get_board_rev(void)
 		((trdx_hw_tag.ver_minor & 0xf) << 4) |
 		((trdx_hw_tag.ver_assembly & 0xf) + 0xa);
 }
-#else
-u32 get_board_rev(void)
-{
-	return 0;
-}
 #endif /* CONFIG_TRDX_CFG_BLOCK */
-#endif /* CONFIG_REVISION_TAG */
 
 #ifdef CONFIG_SERIAL_TAG
-#ifdef CONFIG_TRDX_CFG_BLOCK
 void get_board_serial(struct tag_serialnr *serialnr)
 {
 	int array[8];
@@ -72,17 +65,11 @@ void get_board_serial(struct tag_serialnr *serialnr)
 		serialnr->low = serial;
 	}
 }
-#else
-u32 get_board_rev(void)
-{
-	return 0;
-}
-#endif /* CONFIG_TRDX_CFG_BLOCK */
 #endif /* CONFIG_SERIAL_TAG */
+
 
 int checkboard(void)
 {
-#ifdef CONFIG_TRDX_CFG_BLOCK
 	unsigned char ethaddr[6];
 
 	if (read_trdx_cfg_block()) {
@@ -124,28 +111,23 @@ int checkboard(void)
 		toradex_modules[trdx_hw_tag.prodid],
 		trdx_board_rev_str,
 		trdx_serial_str);
-#else
-	checkboard_fallback();
-#endif
+
 	return 0;
 }
 
 #ifdef CONFIG_USBDOWNLOAD_GADGET
 int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
 {
-	unsigned short usb_pid = 0xffff;
+	unsigned short usb_pid;
 
-#ifdef CONFIG_TRDX_CONFIGBLOCK
 	usb_pid = TORADEX_USB_PRODUCT_NUM_OFFSET + trdx_hw_tag.prodid;
-#endif
 	put_unaligned(usb_pid, &dev->idProduct);
 
 	return 0;
 }
 #endif /* CONFIG_USBDOWNLOAD_GADGET */
 
-#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_SYSTEM_SETUP) && \
-	defined(CONFIG_TRDX_CFG_BLOCK)
+#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_SYSTEM_SETUP)
 int ft_system_setup(void *blob, bd_t *bd)
 {
 	if (trdx_serial) {
@@ -166,3 +148,36 @@ int ft_system_setup(void *blob, bd_t *bd)
 	return 0;
 }
 #endif
+
+#else /* CONFIG_TRDX_CONFIGBLOCK */
+
+#ifdef CONFIG_REVISION_TAG
+u32 get_board_rev(void)
+{
+	return 0;
+}
+#endif /* CONFIG_REVISION_TAG */
+
+#ifdef CONFIG_SERIAL_TAG
+u32 get_board_serial(void)
+{
+	return 0;
+}
+#endif /* CONFIG_SERIAL_TAG */
+
+
+int checkboard(void)
+{
+	checkboard_fallback();
+
+	return 0;
+}
+
+#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_SYSTEM_SETUP)
+int ft_system_setup(void *blob, bd_t *bd)
+{
+	return 0;
+}
+#endif
+
+#endif /* CONFIG_TRDX_CONFIGBLOCK */
