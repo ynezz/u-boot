@@ -257,7 +257,7 @@
 		"consoleblank=0  no_console_suspend=1 console=tty1 " \
 		"console=${console},${baudrate}n8\0 " \
 	"setupdate=run setsdupdate || run setusbupdate || run setethupdate;" \
-		" source ${loadaddr}\0" \
+		" source ${kernel_addr_r}\0" \
 	"setusbupdate=usb start && setenv interface usb; setenv drive 0; " \
 		"load ${interface} ${drive}:1 ${kernel_addr_r} " \
 		"flash_blk.img\0" \
