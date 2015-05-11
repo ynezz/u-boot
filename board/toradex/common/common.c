@@ -9,6 +9,8 @@
 #include <g_dnl.h>
 #include <libfdt.h>
 
+#define TORADEX_USB_PRODUCT_NUM_OFFSET 0x4000
+
 static char trdx_serial_str[9];
 static char trdx_board_rev_str[6];
 
@@ -134,7 +136,7 @@ int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
 	unsigned short usb_pid = 0xffff;
 
 #ifdef CONFIG_TRDX_CONFIGBLOCK
-	usb_pid = 0x4000 + trdx_hw_tag.prodid;
+	usb_pid = TORADEX_USB_PRODUCT_NUM_OFFSET + trdx_hw_tag.prodid;
 #endif
 	put_unaligned(usb_pid, &dev->idProduct);
 
