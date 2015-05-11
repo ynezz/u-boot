@@ -307,8 +307,10 @@ int fsl_dcu_init(unsigned int xres, unsigned int yres,
 	info.screen_size =
 		info.var.xres * info.var.yres * (info.var.bits_per_pixel / 8);
 
-	if (info.screen_size > CONFIG_FSL_DCU_MAX_FB_SIZE)
+	if (info.screen_size > CONFIG_FSL_DCU_MAX_FB_SIZE) {
+		info.screen_size = 0;
 		return -ENOMEM;
+	}
 
 	/* Reserve framebuffer at the end of memory */
 	gd->fb_base = gd->bd->bi_dram[0].start +
@@ -444,7 +446,7 @@ int fsl_dcu_fixedfb_setup(void *blob)
 	int ret;
 
 	start = gd->bd->bi_dram[0].start;
-	size = gd->fb_base - gd->bd->bi_dram[0].start;
+	size = gd->bd->bi_dram[0].size - info.screen_size;
 
 	/*
 	 * Align size on section size (1 MiB). The Linux kernel would crash
