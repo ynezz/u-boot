@@ -183,10 +183,13 @@
 #define CONFIG_CMD_MEMTEST
 #define CONFIG_SYS_ALT_MEMTEST
 
+#define CONFIG_OF_SYSTEM_SETUP
+
 #define CONFIG_SUPPORT_RAW_INITRD
 #define CONFIG_SYS_BOOT_RAMDISK_HIGH
 
 #include "tegra-common-usb-gadget.h"
+#undef CONFIG_SYS_DFU_DATA_BUF_SIZE
 #include "tegra-common-post.h"
 
 #endif /* __CONFIG_H */
