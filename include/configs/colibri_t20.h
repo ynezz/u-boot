@@ -229,6 +229,9 @@
 #define CONFIG_CMD_MEMTEST
 #define CONFIG_SYS_ALT_MEMTEST
 
+#define CONFIG_SUPPORT_RAW_INITRD
+#define CONFIG_SYS_BOOT_RAMDISK_HIGH
+
 #include "tegra-common-usb-gadget.h"
 #include "tegra-common-post.h"
 
