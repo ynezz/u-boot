@@ -87,6 +87,7 @@ struct fdt_nand {
 struct nand_drv {
 	struct nand_ctlr *reg;
 	struct fdt_nand config;
+	uint8_t *data_buf;	/* cache alignment bounce buffer */
 };
 
 static struct nand_drv nand_ctrl;
@@ -534,6 +535,7 @@ static int nand_rw_page(struct mtd_info *mtd, struct nand_chip *chip,
 	char *tag_ptr;
 	struct nand_drv *info;
 	struct fdt_nand *config;
+	uint8_t *temp_buf = NULL;
 
 	if ((uintptr_t)buf & 0x03) {
 		printf("buf %p has to be 4-byte aligned\n", buf);
@@ -544,6 +546,12 @@ static int nand_rw_page(struct mtd_info *mtd, struct nand_chip *chip,
 	config = &info->config;
 	if (set_bus_width_page_size(config, &reg_val))
 		return -EINVAL;
+
+	/* cache alignment */
+	if ((!is_writing) && ((uintptr_t)buf & (ARCH_DMA_MINALIGN - 1))) {
+		temp_buf = buf;
+		buf = info->data_buf;
+	}
 
 	/* Need to be 4-byte aligned */
 	tag_ptr = (char *)tag_buf;
@@ -631,6 +639,11 @@ static int nand_rw_page(struct mtd_info *mtd, struct nand_chip *chip,
 			printf("without ECC");
 		printf("\n");
 		return -EIO;
+	}
+
+	/* cache alignment */
+	if (temp_buf) {
+		memcpy(temp_buf, buf, 1 << chip->page_shift);
 	}
 
 	if (with_ecc && !is_writing) {
@@ -993,6 +1006,11 @@ int tegra_nand_init(struct nand_chip *nand, int devnum)
 
 	nand->ecc.size = our_mtd->writesize;
 	nand->ecc.bytes = our_mtd->oobsize;
+
+	/* cache alignment */
+	info->data_buf = memalign(ARCH_DMA_MINALIGN, our_mtd->writesize);
+	if (!info->data_buf)
+		return -ENOMEM;
 
 	ret = nand_scan_tail(our_mtd);
 	if (ret)
