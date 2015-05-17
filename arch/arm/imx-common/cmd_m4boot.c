@@ -12,6 +12,7 @@
 #include <asm/arch/crm_regs.h>
 #include <asm/io.h>
 #include <image.h>
+#include <inttypes.h>
 
 #ifndef CONFIG_SYS_FDT_PAD
 #define CONFIG_SYS_FDT_PAD 0x3000
@@ -21,11 +22,20 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define CCM_CCOWR_START 0x00015a5a
 
+extern unsigned char _binary_arch_arm_imx_common_vf610m4bootldr_start;
+extern unsigned char _binary_arch_arm_imx_common_vf610m4bootldr_end;
+
 static void boot_startm4_linux(bootm_headers_t *images)
 {
 	struct src *src = (struct src *)SRC_BASE_ADDR;
 	struct ccm_reg *ccm = (struct ccm_reg *)CCM_BASE_ADDR;
-	ulong ep_loader = images->ep - 0x80;
+	int size = &_binary_arch_arm_imx_common_vf610m4bootldr_end -
+		   &_binary_arch_arm_imx_common_vf610m4bootldr_start;
+	ulong ep_loader = images->ep - size;
+
+	/* Copy the Linux mini boot loader just in front of the image... */
+	memcpy((void *)(images->os.image_start - size),
+		&_binary_arch_arm_imx_common_vf610m4bootldr_start, size);
 
 	printf("Booting Cortex-M4 @0x%08lx\n", ep_loader);
 
