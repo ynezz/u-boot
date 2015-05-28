@@ -129,6 +129,12 @@ static int do_m4boot(cmd_tbl_t *cmdtp, int flag, int argc,
 	fit_image_get_os(images.fit_hdr_os, images.fit_noffset_os,
 			 &images.os.os);
 
+	/* Verify entry point is a Thumb2 address */
+	if (!(images.ep & 0x1)) {
+		printf("Entry point 0x%08lx is not a valid Thumb2 address\n",
+			images.ep);
+		return 0;
+	}
 
 	ret = fit_image_load(&images, img_addr, &images.fit_uname_rd,
 			     &images.fit_uname_cfg, IH_ARCH_ARM,
@@ -180,13 +186,6 @@ static int do_m4boot(cmd_tbl_t *cmdtp, int flag, int argc,
 		/* Linux on Cortex-M4 needs a valid device tree... */
 		puts("Could not find a valid device tree\n");
 		return 1;
-	}
-
-	/* Verify entry point is a Thumb2 address */
-	if (!(images.ep & 0x1)) {
-		printf("Entry point 0x%08lx is not a valid Thumb2 address\n",
-			images.ep);
-		return 0;
 	}
 
 	boot_startm4_linux(&images);
