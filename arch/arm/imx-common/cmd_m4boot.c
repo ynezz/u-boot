@@ -25,10 +25,17 @@ DECLARE_GLOBAL_DATA_PTR;
 extern unsigned char _binary_arch_arm_imx_common_vf610m4bootldr_start;
 extern unsigned char _binary_arch_arm_imx_common_vf610m4bootldr_end;
 
+static void boot_startm4(void)
+{
+	struct ccm_reg *ccm = (struct ccm_reg *)CCM_BASE_ADDR;
+
+	/* Gate Cortex-M4 clock... */
+	writel(CCM_CCOWR_START, &ccm->ccowr);
+}
+
 static void boot_startm4_linux(bootm_headers_t *images)
 {
 	struct src *src = (struct src *)SRC_BASE_ADDR;
-	struct ccm_reg *ccm = (struct ccm_reg *)CCM_BASE_ADDR;
 	int size = &_binary_arch_arm_imx_common_vf610m4bootldr_end -
 		   &_binary_arch_arm_imx_common_vf610m4bootldr_start;
 	ulong ep_loader = images->ep - size;
@@ -47,8 +54,24 @@ static void boot_startm4_linux(bootm_headers_t *images)
 
 	flush_dcache_all();
 
-	/* Gate Cortex-M4 clock... */
-	writel(CCM_CCOWR_START, &ccm->ccowr);
+	boot_startm4();
+}
+
+static void boot_startm4_generic(bootm_headers_t *images)
+{
+	struct src *src = (struct src *)SRC_BASE_ADDR;
+
+	printf("Booting Cortex-M4 @0x%08lx\n", images->ep);
+
+	/* Write entry point to GPR2 (PERSISTENT_ENTRY1) */
+	writel(images->ep, &src->gpr2);
+
+	/* Write fdt offset to GPR3 (PERSISTENT_ARG1) */
+	writel(0, &src->gpr3);
+
+	flush_dcache_all();
+
+	boot_startm4();
 }
 
 static int fdt_chosenm4(void *fdt)
@@ -188,7 +211,10 @@ static int do_m4boot(cmd_tbl_t *cmdtp, int flag, int argc,
 		return 1;
 	}
 
-	boot_startm4_linux(&images);
+	if (images.os.os == IH_OS_LINUX)
+		boot_startm4_linux(&images);
+	else
+		boot_startm4_generic(&images);
 
 	return 1;
 }
