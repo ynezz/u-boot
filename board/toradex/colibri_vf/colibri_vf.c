@@ -17,11 +17,14 @@
 #include <asm/arch/clock.h>
 #include <asm/imx-common/boot_mode.h>
 #include <mmc.h>
+#include <mtd_node.h>
+#include <fdt_support.h>
 #include <fsl_esdhc.h>
 #include <fsl_dcu_fb.h>
 #include <miiphy.h>
 #include <netdev.h>
 #include <i2c.h>
+#include <jffs2/load_kernel.h>
 #include <asm/gpio.h>
 
 #include "../common/configblock.h"
@@ -467,6 +470,16 @@ int checkboard_fallback(void)
 #if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
 int ft_board_setup(void *blob, bd_t *bd)
 {
+#ifdef CONFIG_FDT_FIXUP_PARTITIONS
+	static struct node_info nodes[] = {
+		{ "fsl,vf610-nfc",  MTD_DEV_TYPE_NAND, }, /* NAND flash */
+	};
+
+	/* Update partition nodes using info from mtdparts env var */
+	puts("   Updating MTD partitions...\n");
+	fdt_fixup_mtdparts(blob, nodes, ARRAY_SIZE(nodes));
+#endif
+
 	return fsl_dcu_fixedfb_setup(blob);
 }
 #endif

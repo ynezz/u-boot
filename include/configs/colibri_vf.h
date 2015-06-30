@@ -151,7 +151,7 @@
 
 #define SD_BOOTCMD \
 	"sdargs=root=/dev/mmcblk0p2 rw rootwait\0"	\
-	"sdboot=run setup; setenv bootargs ${defargs} ${sdargs} ${mtdparts} " \
+	"sdboot=run setup; setenv bootargs ${defargs} ${sdargs} " \
 	"${setupargs} ${vidargs}; echo Booting from MMC/SD card...; " \
 	"load mmc 0:2 ${kernel_addr_r} /boot/${kernel_file} && " \
 	"load mmc 0:2 ${fdt_addr_r} /boot/${soc}-colibri-${fdt_board}.dtb && " \
@@ -160,7 +160,7 @@
 #define NFS_BOOTCMD \
 	"nfsargs=ip=:::::eth0: root=/dev/nfs\0"	\
 	"nfsboot=run setup; " \
-	"setenv bootargs ${defargs} ${nfsargs} ${mtdparts} " \
+	"setenv bootargs ${defargs} ${nfsargs} " \
 	"${setupargs} ${vidargs}; echo Booting from NFS...;" \
 	"dhcp ${kernel_addr_r} && "	\
 	"tftp ${fdt_addr_r} ${soc}-colibri-${fdt_board}.dtb && " \
@@ -170,7 +170,7 @@
 	"ubiargs=ubi.mtd=ubi root=ubi0:rootfs rootfstype=ubifs " \
 	"ubi.fm_autoconvert=1\0" \
 	"ubiboot=run setup; " \
-	"setenv bootargs ${defargs} ${ubiargs} ${mtdparts} " \
+	"setenv bootargs ${defargs} ${ubiargs} " \
 	"${setupargs} ${vidargs}; echo Booting from NAND...; " \
 	"ubi part ubi && ubifsmount ubi0:rootfs && " \
 	"ubifsload ${kernel_addr_r} /boot/${kernel_file} && " \
@@ -265,6 +265,7 @@
 #define CONFIG_OF_LIBFDT
 #define CONFIG_OF_BOARD_SETUP
 #define CONFIG_OF_SYSTEM_SETUP
+#define CONFIG_FDT_FIXUP_PARTITIONS
 
 #define CONFIG_CMD_BOOTZ
 #define CONFIG_SUPPORT_RAW_INITRD
