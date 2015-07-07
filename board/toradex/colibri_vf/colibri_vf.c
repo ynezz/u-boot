@@ -479,6 +479,15 @@ int ft_board_setup(void *blob, bd_t *bd)
 	puts("   Updating MTD partitions...\n");
 	fdt_fixup_mtdparts(blob, nodes, ARRAY_SIZE(nodes));
 #endif
+#ifdef CONFIG_TRDX_CFG_BLOCK
+	/*
+	 * Colibri VFxx modules V1.2 and later have pull-up/down which allows
+	 * to put the DDR3 memory into self-refresh mode.
+	 */
+	if (trdx_hw_tag.ver_major >= 1 && trdx_hw_tag.ver_minor >= 2)
+		do_fixup_by_compat(blob, "fsl,vf610-ddrmc",
+				   "fsl,has-cke-reset-pulls", NULL, 0, 1);
+#endif
 
 	return fsl_dcu_fixedfb_setup(blob);
 }
