@@ -25,9 +25,10 @@
 /* 7-bit I2C bus slave address */
 #define PFUZE100_I2C_ADDR 		(0x08)
 
+/* use Apalis GPIO1 to switch on VPGM, ON: 1 */
 static iomux_v3_cfg_t const pmic_prog_pads[] = {
-	MX6_PAD_GPIO_2__GPIO1_IO02 | MUX_PAD_CTRL(NO_PAD_CTRL),
-#	define PMIC_PROG_VOLTAGE IMX_GPIO_NR(1, 2)
+	MX6_PAD_NANDF_D4__GPIO2_IO04 | MUX_PAD_CTRL(NO_PAD_CTRL),
+#	define PMIC_PROG_VOLTAGE IMX_GPIO_NR(2, 4)
 };
 
 unsigned pmic_init(void)
