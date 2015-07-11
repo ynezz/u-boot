@@ -162,7 +162,7 @@
 	"setupdate=run setsdupdate || run setusbupdate || run setethupdate;" \
 		" source ${kernel_addr_r}\0" \
 	USB_BOOTCMD \
-	"vidargs=video=tegrafb0:640x480-16@60 fbcon=map:1\0"
+	"vidargs=video=tegrafb0:640x480-16@60\0"
 
 /* Increase console I/O buffer size */
 #undef CONFIG_SYS_CBSIZE
