@@ -61,7 +61,7 @@
 /* USB host support */
 #define CONFIG_USB_EHCI
 #define CONFIG_USB_EHCI_TEGRA
-#define CONFIG_USB_MAX_CONTROLLER_COUNT		3
+#define CONFIG_USB_MAX_CONTROLLER_COUNT	3
 #define CONFIG_USB_STORAGE
 #define CONFIG_CMD_USB
 
@@ -80,6 +80,9 @@
 /* General networking support */
 #define CONFIG_CMD_NET
 #define CONFIG_CMD_DHCP
+#define CONFIG_IP_DEFRAG
+#define CONFIG_TFTP_BLOCKSIZE		16384
+#define CONFIG_TFTP_TSIZE
 
 /* Miscellaneous commands */
 #define CONFIG_CMD_SETEXPR
