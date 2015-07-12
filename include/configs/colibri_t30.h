@@ -76,6 +76,16 @@
 #define CONFIG_TFTP_BLOCKSIZE		16384
 #define CONFIG_TFTP_TSIZE
 
+/* LCD support */
+#define CONFIG_LCD
+#define CONFIG_PWM_TEGRA
+#define CONFIG_VIDEO_TEGRA
+#define LCD_BPP				LCD_COLOR16
+#define CONFIG_SYS_WHITE_ON_BLACK
+#define CONFIG_CONSOLE_SCROLL_LINES	10
+#define CONFIG_CMD_BMP
+#define CONFIG_LCD_LOGO
+
 /* Miscellaneous commands */
 #define CONFIG_CMD_SETEXPR
 #define CONFIG_FAT_WRITE
