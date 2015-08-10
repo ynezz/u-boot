@@ -91,7 +91,7 @@ static int fdt_chosenm4(void *fdt)
 	if (nodeoffset < 0)
 		return nodeoffset;
 
-	str = getenv("bootargsm4");
+	str = getenv("m4bootargs");
 	if (str) {
 		err = fdt_setprop(fdt, nodeoffset, "bootargs", str,
 				  strlen(str) + 1);
