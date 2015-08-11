@@ -509,7 +509,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 	 * Colibri VFxx modules V1.2 and later have pull-up/down which allows
 	 * to put the DDR3 memory into self-refresh mode.
 	 */
-	if (trdx_hw_tag.ver_major >= 1 && trdx_hw_tag.ver_minor >= 2)
+	if (trdx_hw_tag.ver_major > 1 || trdx_hw_tag.ver_minor >= 2)
 		do_fixup_by_compat(blob, "fsl,vf610-ddrmc",
 				   "fsl,has-cke-reset-pulls", NULL, 0, 1);
 #endif
