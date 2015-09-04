@@ -271,7 +271,7 @@
 
 #ifndef CONFIG_APALIS_IMX6_V1_0
 #define FDT_FILE "imx6q-apalis-eval.dtb"
-#define FDT_FILE_V1_0 "imx6q-apalis-eval_v1_0.dtb"
+#define FDT_FILE_V1_0 "imx6q-apalis_v1_0-eval"
 #else
 #define FDT_FILE "imx6q-apalis-eval_v1_0.dtb"
 #endif
