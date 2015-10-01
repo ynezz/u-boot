@@ -495,6 +495,7 @@ int checkboard_fallback(void)
 #if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
 int ft_board_setup(void *blob, bd_t *bd)
 {
+	int ret = 0;
 #ifdef CONFIG_FDT_FIXUP_PARTITIONS
 	static struct node_info nodes[] = {
 		{ "fsl,vf610-nfc",  MTD_DEV_TYPE_NAND, }, /* NAND flash */
@@ -513,8 +514,11 @@ int ft_board_setup(void *blob, bd_t *bd)
 		do_fixup_by_compat(blob, "fsl,vf610-ddrmc",
 				   "fsl,has-cke-reset-pulls", NULL, 0, 1);
 #endif
+#ifdef CONFIG_FSL_DCU_FB
+	ret = fsl_dcu_fixedfb_setup(blob);
+#endif
 
-	return fsl_dcu_fixedfb_setup(blob);
+	return ret;
 }
 #endif
 
