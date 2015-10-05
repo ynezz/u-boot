@@ -334,13 +334,14 @@ static int do_cfgblock_create(cmd_tbl_t *cmdtp, int flag, int argc,
 	struct toradex_tag *tag;
 	size_t size = TRDX_CFG_BLOCK_MAX_SIZE;
 	int offset = 0;
-	int ret;
+	int ret = CMD_RET_SUCCESS;
+	int err;
 
 	/* Allocate RAM area for config block */
 	config_block = memalign(ARCH_DMA_MINALIGN, size);
 	if (!config_block) {
 		printf("Not enough malloc space available!\n");
-		return -ENOMEM;
+		return CMD_RET_FAILURE;
 	}
 
 	memset(config_block, 0xff, size);
@@ -355,33 +356,30 @@ static int do_cfgblock_create(cmd_tbl_t *cmdtp, int flag, int argc,
 		printf("NAND erase block %d need to be erased before creating "
 		       "a Toradex config block\n",
 		       CONFIG_TRDX_CFG_BLOCK_OFFSET / nand_info[0].erasesize);
-		ret = 0;
 		goto out;
 #else
 		char message[CONFIG_SYS_CBSIZE];
 		sprintf(message, "A valid Toradex config block is present, "
 			         "still recreate? [y/N] ");
 
-		if (!cli_readline(message)) {
-			ret = 0;
+		if (!cli_readline(message))
 			goto out;
-		}
 
-		if (console_buffer[0] != 'y' && console_buffer[0] != 'Y') {
-			ret = 0;
+		if (console_buffer[0] != 'y' && console_buffer[0] != 'Y')
 			goto out;
-		}
 #endif
 	}
 
 	/* Parse new Toradex config  block data... */
 	if (argc < 3)
-		ret = get_cfgblock_interactive();
+		err = get_cfgblock_interactive();
 	else
-		ret = get_cfgblock_barcode(argv[2]);
+		err = get_cfgblock_barcode(argv[2]);
 
-	if (ret)
+	if (err) {
+		ret = CMD_RET_FAILURE;
 		goto out;
+	}
 
 	/* Convert serial number to MAC address (the storage format) */
 	trdx_eth_addr.oui = htonl(0x00142dUL << 8);
@@ -416,14 +414,15 @@ static int do_cfgblock_create(cmd_tbl_t *cmdtp, int flag, int argc,
 	memset(config_block + offset, 0, 32 - offset);
 
 #ifdef CONFIG_TRDX_CFG_BLOCK_IS_IN_MMC
-	ret = trdx_cfg_block_mmc_storage(config_block, 1);
+	err = trdx_cfg_block_mmc_storage(config_block, 1);
 #elif defined(CONFIG_TRDX_CFG_BLOCK_IS_IN_NAND)
-	ret = write_trdx_cfg_block_to_nand(config_block);
+	err = write_trdx_cfg_block_to_nand(config_block);
 #else
-	ret = -EINVAL;
+	err = -EINVAL;
 #endif
-	if (ret) {
+	if (err) {
 		printf("Failed to write Toradex config block: %d\n", ret);
+		ret = CMD_RET_FAILURE;
 		goto out;
 	}
 
@@ -446,10 +445,12 @@ static int do_cfgblock(cmd_tbl_t *cmdtp, int flag, int argc,
 		return do_cfgblock_create(cmdtp, flag, argc, argv);
 	} else if (!strcmp(argv[1], "reload")) {
 		ret = read_trdx_cfg_block();
-		if (ret)
+		if (ret) {
 			printf("Failed to reload Toradex config block: %d\n",
 			       ret);
-		return 0;
+			return CMD_RET_FAILURE;
+		}
+		return CMD_RET_SUCCESS;
 	}
 
 	return CMD_RET_USAGE;
