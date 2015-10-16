@@ -107,7 +107,7 @@ struct i2c_pads_info i2c_pad_info1 = {
 	}
 };
 
-/* Colibri local, PMIC, SGTL5000, STMPE811*/
+/* Colibri local, PMIC, SGTL5000, STMPE811 */
 struct i2c_pads_info i2c_pad_info_loc = {
 	.scl = {
 		.i2c_mode = MX6_PAD_EIM_EB2__I2C2_SCL | PC,
@@ -166,7 +166,7 @@ static void setup_iomux_enet(void)
 	imx_iomux_v3_setup_multiple_pads(enet_pads, ARRAY_SIZE(enet_pads));
 }
 
-/* mux auxilary pins to gpio, so they can be used from the U-Boot commandline */
+/* mux auxiliary pins to GPIO, so they can be used from the U-Boot commandline */
 iomux_v3_cfg_t const gpio_pads[] = {
 	/* ADDRESS[17:18] [25] used as GPIO */
 	MX6_PAD_KEY_ROW2__GPIO4_IO11	| MUX_PAD_CTRL(WEAK_PULLUP),
@@ -256,7 +256,8 @@ iomux_v3_cfg_t const usb_pads[] = {
 #endif
 };
 
-/* UARTs are used in DTE mode, switch the mode on all UARTs before
+/*
+ * UARTs are used in DTE mode, switch the mode on all UARTs before
  * any pinmuxing connects a (DCE) output to a transceiver output.
  */
 #define UFCR		0x90	/* FIFO Control Register */
@@ -375,7 +376,7 @@ int board_eth_init(bd_t *bis)
 	struct phy_device *phydev = NULL;
 	int ret;
 
-	//provide the phy clock from the i.mx6
+	/* provide the PHY clock from the i.MX 6 */
 	ret = enable_fec_anatop_clock(ENET_50MHZ);
 	if (ret)
 		return ret;
@@ -388,14 +389,14 @@ int board_eth_init(bd_t *bis)
 	bus = fec_get_miibus(base, -1);
 	if (!bus)
 		return 0;
-	/* scan phy 1..7 */
+	/* scan PHY 1..7 */
 	phydev = phy_find_by_mask(bus, 0xff, PHY_INTERFACE_MODE_RMII);
 	if (!phydev) {
 		free(bus);
-		puts("no phy found\n");
+		puts("no PHY found\n");
 		return 0;
 	}
-	printf("using phy at %d\n", phydev->addr);
+	printf("using PHY at %d\n", phydev->addr);
 	ret  = fec_probe(bis, -1, base, bus, phydev);
 	if (ret) {
 		printf("FEC MXC: %s:failed\n", __func__);
@@ -407,8 +408,10 @@ int board_eth_init(bd_t *bis)
 }
 
 static iomux_v3_cfg_t const pwr_intb_pads[] = {
-	/* the bootrom sets the iomux to vselect, potentially connecting
-	 * two outputs. Set this back to GPIO */
+	/*
+	 * the bootrom sets the iomux to vselect, potentially connecting
+	 * two outputs. Set this back to GPIO
+	 */
 	MX6_PAD_GPIO_18__GPIO7_IO13 | MUX_PAD_CTRL(NO_PAD_CTRL)
 };
 
@@ -580,7 +583,7 @@ static void setup_display(void)
 	       <<IOMUXC_GPR3_LVDS0_MUX_CTL_OFFSET);
 	writel(reg, &iomux->gpr[3]);
 
-	/* backlights unconditionally on for now */
+	/* backlight unconditionally on for now */
 	imx_iomux_v3_setup_multiple_pads(backlight_pads,
 					 ARRAY_SIZE(backlight_pads));
 	/* use 0 for EDT 7", use 1 for LG fullHD panel */
@@ -656,8 +659,8 @@ int checkboard_fallback(void)
 
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {
-	{"mmc",		MAKE_CFGVAL(0x40, 0x20, 0x00, 0x00)},
-	{NULL,		0},
+	{"mmc",	MAKE_CFGVAL(0x40, 0x20, 0x00, 0x00)},
+	{NULL,	0},
 };
 #endif
 
@@ -669,11 +672,12 @@ int misc_init_r(void)
 	return 0;
 }
 
-/* On Colibri iMX6 the DDR bus width depends on the CPU type
- * With Solo it is 32bit, with Dual Light 64 bit.
- * U-Boot is configured to use 32bit on both models which works.
+/*
+ * On Colibri iMX6 the DDR bus width depends on the CPU type
+ * With Solo it is 32-bit, with DualLite 64-bit.
+ * U-Boot is configured to use 32-bit on both models which works.
  * This commands patches this so that on subsequent boots a DL
- * will use 64bit and thus all stuffed memory
+ * will use 64-bit and thus all stuffed memory.
  */
 int do_patch_ddr_size(cmd_tbl_t *cmdtp, int flag, int argc,
 		char * const argv[])
