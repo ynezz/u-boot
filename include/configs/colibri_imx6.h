@@ -40,7 +40,7 @@
 #define CONFIG_MXC_UART
 #define CONFIG_MXC_UART_BASE		UART1_BASE
 
-/* Make the HW version stuff available in u-boot env */
+/* Make the HW version stuff available in U-Boot env */
 #define CONFIG_VERSION_VARIABLE		/* ver environment variable */
 #define CONFIG_ENV_VARS_UBOOT_CONFIG
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
@@ -224,7 +224,7 @@
 		"rootwait\0" \
 	"sdboot=run setup; " \
 		"setenv bootargs ${defargs} ${sdargs} ${setupargs} " \
-		"${vidargs}; echo Booting from SD card in 8bit slot...; " \
+		"${vidargs}; echo Booting from SD card; " \
 		"run sddtbload; load mmc 1:1 ${kernel_addr_r} " \
 		"${boot_file} && bootm ${kernel_addr_r} ${dtbparam}\0" \
 	"sddtbload=setenv dtbparam; load mmc 1:1 ${fdt_addr_r} " \
