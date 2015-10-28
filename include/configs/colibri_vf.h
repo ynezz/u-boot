@@ -315,4 +315,6 @@
 #define CONFIG_FSL_DSPI
 #endif
 
+#define CONFIG_CRC32_VERIFY
+
 #endif /* __CONFIG_H */
