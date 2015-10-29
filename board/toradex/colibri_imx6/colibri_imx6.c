@@ -690,6 +690,8 @@ int do_patch_ddr_size(cmd_tbl_t *cmdtp, int flag, int argc,
 	if (ivt != NULL) {
 		/* read IVT */
 		mmc = find_mmc_device(0);
+		/* Switch to primary eMMC boot area partition */
+		mmc_switch_part(0, 1);
 		ret = mmc->block_dev.block_read(0, 2, 2, ivt);
 		/* FIXME: Parse IVT to find DCD, parse DCD to find correct write addr */
 		if(ret == 2) {
@@ -699,6 +701,8 @@ int do_patch_ddr_size(cmd_tbl_t *cmdtp, int flag, int argc,
 				puts("patched, ");
 			}
 		}
+		/* Switch back to regular eMMC user partition */
+		mmc_switch_part(0, 0);
 	}
 	if(ret == 2)
 		puts("done.\n");
