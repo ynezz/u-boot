@@ -181,31 +181,31 @@
 #define DFU_ALT_NAND_INFO	"vf-bcb part 0,1;u-boot part 0,2;ubi part 0,4"
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"kernel_addr_r=0x82000000\0" \
+	"console=ttyLP0\0" \
+	"defargs=\0" \
+	"dfu_alt_info=" DFU_ALT_NAND_INFO "\0" \
 	"fdt_addr_r=0x84000000\0" \
-	"kernel_file=zImage\0" \
 	"fdt_board=eval-v3\0" \
 	"fdt_file=${soc}-colibri-${fdt_board}.dtb\0" \
 	"fdt_fixup=;\0" \
-	"defargs=\0" \
-	"console=ttyLP0\0" \
-	"setup=setenv setupargs " \
-		"console=tty1 console=${console}" \
-		",${baudrate}n8 ${memargs} consoleblank=0\0" \
+	"kernel_addr_r=0x82000000\0" \
+	"kernel_file=zImage\0" \
+	"mtdparts=" MTDPARTS_DEFAULT "\0" \
+	NFS_BOOTCMD \
+	SD_BOOTCMD \
 	"setsdupdate=mmc rescan && setenv interface mmc && " \
 		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
 		"source ${loadaddr}\0" \
+	"setup=setenv setupargs " \
+		"console=tty1 console=${console}" \
+		",${baudrate}n8 ${memargs} consoleblank=0\0" \
+	"setupdate=run setsdupdate || run setusbupdate\0" \
 	"setusbupdate=usb start && setenv interface usb && " \
 		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
 		"source ${loadaddr}\0" \
-	"setupdate=run setsdupdate || run setusbupdate\0" \
-	"mtdparts=" MTDPARTS_DEFAULT "\0" \
-	"dfu_alt_info=" DFU_ALT_NAND_INFO "\0" \
-	"video-mode=dcufb:640x480-16@60,monitor=lcd\0" \
 	"splashpos=m,m\0" \
-	SD_BOOTCMD \
-	NFS_BOOTCMD \
-	UBI_BOOTCMD
+	UBI_BOOTCMD \
+	"video-mode=dcufb:640x480-16@60,monitor=lcd\0"
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP		/* undef to save memory */
