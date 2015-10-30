@@ -164,7 +164,9 @@
 	"fdt_board=eval-v3\0" \
 	NFS_BOOTCMD \
 	SD_BOOTCMD \
-	"setethupdate=usb start && tftpboot ${kernel_addr_r} flash_eth.img\0" \
+	"setethupdate=if env exists ethaddr; then; else setenv ethaddr " \
+		"00:14:2d:00:00:00; fi; usb start && tftpboot " \
+		"${kernel_addr_r} flash_eth.img\0" \
 	"setsdupdate=setenv interface mmc; setenv drive 1; mmc rescan; load " \
 		"${interface} ${drive}:1 ${kernel_addr_r} flash_blk.img\0" \
 	"setup=setenv setupargs asix_mac=${ethaddr} " \

@@ -193,8 +193,9 @@
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 	NFS_BOOTCMD \
 	SD_BOOTCMD \
-	"setethupdate=tftpboot ${loadaddr} flash_eth.img && " \
-		"source ${loadaddr}\0" \
+	"setethupdate=if env exists ethaddr; then; else setenv ethaddr " \
+		"00:14:2d:00:00:00; fi; tftpboot ${loadaddr} " \
+		"flash_eth.img && source ${loadaddr}\0" \
 	"setsdupdate=mmc rescan && setenv interface mmc && " \
 		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
 		"source ${loadaddr}\0" \
