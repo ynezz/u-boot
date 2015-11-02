@@ -182,6 +182,7 @@ int board_postclk_init(void)
 #endif
 
 #ifdef CONFIG_SERIAL_TAG
+#ifndef CONFIG_SERIAL_TAG_BOARD
 void get_board_serial(struct tag_serialnr *serialnr)
 {
 	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
@@ -192,6 +193,7 @@ void get_board_serial(struct tag_serialnr *serialnr)
 	serialnr->low = fuse->tester0;
 	serialnr->high = fuse->tester1;
 }
+#endif
 #endif
 
 #ifndef CONFIG_SYS_DCACHE_OFF
