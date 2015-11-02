@@ -1,0 +1,15 @@
+if TARGET_COLIBRI_IMX7
+
+config SYS_BOARD
+	default "colibri_imx7"
+
+config SYS_VENDOR
+	default "toradex"
+
+config SYS_SOC
+	default "mx7"
+
+config SYS_CONFIG_NAME
+	default "colibri_imx7"
+
+endif
