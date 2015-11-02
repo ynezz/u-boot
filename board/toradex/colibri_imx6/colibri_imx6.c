@@ -377,7 +377,7 @@ int board_eth_init(bd_t *bis)
 	int ret;
 
 	/* provide the PHY clock from the i.MX 6 */
-	ret = enable_fec_anatop_clock(ENET_50MHZ);
+	ret = enable_fec_anatop_clock(0, ENET_50MHZ);
 	if (ret)
 		return ret;
 	/* set gpr1[ENET_CLK_SEL] */
