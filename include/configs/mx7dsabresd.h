@@ -166,6 +166,7 @@
 		"\0" \
 	"initrd_addr=0x83800000\0" \
 	"initrd_high=0xffffffff\0" \
+	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 	"bootcmd_mfg=run mfgtool_args;bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
 
 #if defined(CONFIG_SYS_BOOT_NAND)
@@ -302,6 +303,8 @@
 
 #define CONFIG_ENV_SIZE			SZ_8K
 
+#define CONFIG_SYS_USE_NAND
+
 #ifdef CONFIG_SYS_BOOT_QSPI
 #define CONFIG_SYS_USE_QSPI
 #define CONFIG_ENV_IS_IN_SPI_FLASH
@@ -314,6 +317,7 @@
 
 #ifdef CONFIG_SYS_USE_NAND
 #define CONFIG_CMD_NAND
+#define CONFIG_CMD_WRITEBCB
 #define CONFIG_CMD_NAND_TRIMFFS
 
 /* NAND stuff */
@@ -322,6 +326,24 @@
 #define CONFIG_SYS_NAND_BASE		0x40000000
 #define CONFIG_SYS_NAND_5_ADDR_CYCLE
 #define CONFIG_SYS_NAND_ONFI_DETECTION
+
+/* UBI stuff */
+#define CONFIG_RBTREE
+#define CONFIG_LZO
+#define CONFIG_CMD_UBI
+#define CONFIG_MTD_UBI_FASTMAP
+#define CONFIG_CMD_UBIFS	/* increases size by almost 60 KB */
+
+/* Dynamic MTD partition support */
+#define CONFIG_CMD_MTDPARTS	/* Enable 'mtdparts' command line support */
+#define CONFIG_MTD_PARTITIONS
+#define CONFIG_MTD_DEVICE	/* needed for mtdparts commands */
+#define MTDIDS_DEFAULT		"nand0=gpmi-nand"
+#define MTDPARTS_DEFAULT	"mtdparts=gpmi-nand:"		\
+				"128k(mx7-bcb)ro,"		\
+				"1408k(u-boot)ro,"		\
+				"512k(u-boot-env),"		\
+				"-(ubi)"
 
 /* DMA stuff, needed for GPMI/MXS NAND support */
 #define CONFIG_APBH_DMA
