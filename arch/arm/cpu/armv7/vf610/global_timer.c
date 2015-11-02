@@ -65,7 +65,7 @@ void __udelay(unsigned long usec)
 	u64 wait;
 
 	start = get_cpu_global_timer();
-	wait = (u64)((usec * CLK2MHZ(mxc_get_clock(MXC_BUS_CLK))) >> 2);
+	wait = (u64)(usec * CLK2MHZ(mxc_get_clock(MXC_BUS_CLK)));
 	do {
 		current = get_cpu_global_timer();
 	} while ((current - start) < wait);
@@ -83,5 +83,5 @@ unsigned long long get_ticks(void)
 
 ulong get_tbclk(void)
 {
-	return (ulong)(mxc_get_clock(MXC_BUS_CLK) >> 2);
+	return (ulong)mxc_get_clock(MXC_ARM_CLK);
 }
