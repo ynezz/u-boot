@@ -20,8 +20,6 @@
 #include <miiphy.h>
 #include <netdev.h>
 #include <power/pmic.h>
-#include <power/pfuze300_pmic.h>
-#include "../../freescale/common/pfuze.h"
 #ifdef CONFIG_SYS_I2C_MXC
 #include <i2c.h>
 #include <asm/imx-common/mxc_i2c.h>
@@ -969,28 +967,6 @@ static const struct boot_mode board_boot_modes[] = {
 #define I2C_PMIC	0
 int power_init_board(void)
 {
-	struct pmic *p;
-	int ret;
-	unsigned int reg, rev_id;
-
-	ret = power_pfuze300_init(I2C_PMIC);
-	if (ret)
-		return ret;
-
-	p = pmic_get("PFUZE300");
-	ret = pmic_probe(p);
-	if (ret)
-		return ret;
-
-	pmic_reg_read(p, PFUZE300_DEVICEID, &reg);
-	pmic_reg_read(p, PFUZE300_REVID, &rev_id);
-	printf("PMIC: PFUZE300 DEV_ID=0x%x REV_ID=0x%x\n", reg, rev_id);
-
-	/* disable Low Power Mode during standby mode */
-	pmic_reg_read(p, PFUZE300_LDOGCTL, &reg);
-	reg |= 0x1;
-	pmic_reg_write(p, PFUZE300_LDOGCTL, reg);
-
 	return 0;
 }
 #endif
