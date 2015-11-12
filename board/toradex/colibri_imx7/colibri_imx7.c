@@ -82,28 +82,14 @@ DECLARE_GLOBAL_DATA_PTR;
 /* I2C1 for PMIC */
 struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
-		.i2c_mode = MX7D_PAD_I2C1_SCL__I2C1_SCL | PC,
-		.gpio_mode = MX7D_PAD_I2C1_SCL__GPIO4_IO8 | PC,
-		.gp = IMX_GPIO_NR(4, 8),
+		.i2c_mode = MX7D_PAD_GPIO1_IO04__I2C1_SCL | PC,
+		.gpio_mode = MX7D_PAD_GPIO1_IO04__GPIO1_IO4 | PC,
+		.gp = IMX_GPIO_NR(1, 4),
 	},
 	.sda = {
-		.i2c_mode = MX7D_PAD_I2C1_SDA__I2C1_SDA | PC,
-		.gpio_mode = MX7D_PAD_I2C1_SDA__GPIO4_IO9 | PC,
-		.gp = IMX_GPIO_NR(4, 9),
-	},
-};
-
-/* I2C3 */
-struct i2c_pads_info i2c_pad_info3 = {
-	.scl = {
-		.i2c_mode = MX7D_PAD_I2C3_SCL__I2C3_SCL | PC,
-		.gpio_mode = MX7D_PAD_I2C3_SCL__GPIO4_IO12 | PC,
-		.gp = IMX_GPIO_NR(4, 12),
-	},
-	.sda = {
-		.i2c_mode = MX7D_PAD_I2C3_SDA__I2C3_SDA | PC,
-		.gpio_mode = MX7D_PAD_I2C3_SDA__GPIO4_IO13 | PC,
-		.gp = IMX_GPIO_NR(4, 13),
+		.i2c_mode = MX7D_PAD_GPIO1_IO05__I2C1_SDA | PC,
+		.gpio_mode = MX7D_PAD_GPIO1_IO05__GPIO1_IO5 | PC,
+		.gp = IMX_GPIO_NR(1, 5),
 	},
 };
 #endif
@@ -520,7 +506,6 @@ int board_early_init_f(void)
 
 #ifdef CONFIG_SYS_I2C_MXC
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
-	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info3);
 #endif
 
 	return 0;
