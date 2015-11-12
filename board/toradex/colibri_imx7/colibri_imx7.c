@@ -116,8 +116,10 @@ int dram_init(void)
 }
 
 static iomux_v3_cfg_t const uart1_pads[] = {
-	MX7D_PAD_UART1_TX_DATA__UART1_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
-	MX7D_PAD_UART1_RX_DATA__UART1_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX7D_PAD_UART1_RX_DATA__UART1_DTE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX7D_PAD_UART1_TX_DATA__UART1_DTE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX7D_PAD_SAI2_TX_BCLK__UART1_DTE_CTS | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX7D_PAD_SAI2_TX_SYNC__UART1_DTE_RTS | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
 static iomux_v3_cfg_t const usdhc1_pads[] = {
@@ -313,16 +315,28 @@ static void setup_iomux_fec(void)
 }
 #endif
 
-static void setup_iomux_uart(void)
+/* UARTs are used in DTE mode, switch the mode on all UARTs before
+ * any pinmuxing connects a (DCE) output to a transceiver output.
+ */
+#define UFCR		0x90	/* FIFO Control Register */
+#define UFCR_DCEDTE	(1<<6)	/* DCE=0 */
+
+static void setup_dtemode_uart(void)
 {
-	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
+	setbits_le32((u32 *)(UART1_IPS_BASE_ADDR + UFCR), UFCR_DCEDTE);
+	setbits_le32((u32 *)(UART2_IPS_BASE_ADDR + UFCR), UFCR_DCEDTE);
+	setbits_le32((u32 *)(UART3_IPS_BASE_ADDR + UFCR), UFCR_DCEDTE);
 }
 
-#ifdef CONFIG_FSL_ESDHC
+static void setup_iomux_uart(void)
+ {
+	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
+ }
 
 #define USDHC1_CD_GPIO	IMX_GPIO_NR(5, 0)
 #define USDHC1_PWR_GPIO	IMX_GPIO_NR(5, 2)
 #define USDHC3_PWR_GPIO IMX_GPIO_NR(6, 11)
+#ifdef CONFIG_FSL_ESDHC
 
 static struct fsl_esdhc_cfg usdhc_cfg[3] = {
 	{USDHC1_BASE_ADDR, 0, 4},
@@ -501,6 +515,7 @@ int board_phy_config(struct phy_device *phydev)
 
 int board_early_init_f(void)
 {
+	setup_dtemode_uart();
 	setup_iomux_uart();
 
 #ifdef CONFIG_SYS_I2C_MXC
