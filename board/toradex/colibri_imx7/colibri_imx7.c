@@ -116,7 +116,8 @@ static iomux_v3_cfg_t const usdhc1_pads[] = {
 	MX7D_PAD_SD1_DATA2__SD1_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX7D_PAD_SD1_DATA3__SD1_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 
-	MX7D_PAD_SD1_CD_B__GPIO5_IO0 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX7D_PAD_GPIO1_IO00__GPIO1_IO0 | MUX_PAD_CTRL(NO_PAD_CTRL),
+#define USDHC1_CD_GPIO	IMX_GPIO_NR(1, 0)
 };
 
 #ifdef CONFIG_SYS_USE_NAND
@@ -339,14 +340,10 @@ static void setup_iomux_uart(void)
 	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
  }
 
-#define USDHC1_CD_GPIO	IMX_GPIO_NR(5, 0)
-#define USDHC1_PWR_GPIO	IMX_GPIO_NR(5, 2)
-#define USDHC3_PWR_GPIO IMX_GPIO_NR(6, 11)
 #ifdef CONFIG_FSL_ESDHC
 
-static struct fsl_esdhc_cfg usdhc_cfg[3] = {
+static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC1_BASE_ADDR, 0, 4},
-	{USDHC3_BASE_ADDR},
 };
 
 int mmc_get_env_devno(void)
@@ -384,9 +381,6 @@ int board_mmc_getcd(struct mmc *mmc)
 	case USDHC1_BASE_ADDR:
 		ret = !gpio_get_value(USDHC1_CD_GPIO);
 		break;
-	case USDHC3_BASE_ADDR:
-		ret = 1; /* Assume uSDHC3 emmc is always present */
-		break;
 	}
 
 	return ret;
@@ -396,10 +390,8 @@ int board_mmc_init(bd_t *bis)
 {
 	int i, ret;
 	/*
-	 * According to the board_mmc_init() the following map is done:
 	 * (U-boot device node)    (Physical Port)
 	 * mmc0                    USDHC1
-	 * mmc2                    USDHC3 (eMMC)
 	 */
 	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
 		switch (i) {
@@ -408,30 +400,17 @@ int board_mmc_init(bd_t *bis)
 				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
 			gpio_request(USDHC1_CD_GPIO, "usdhc1_cd");
 			gpio_direction_input(USDHC1_CD_GPIO);
-			gpio_request(USDHC1_PWR_GPIO, "usdhc1_pwr");
-			gpio_direction_output(USDHC1_PWR_GPIO, 0);
-			udelay(500);
-			gpio_direction_output(USDHC1_PWR_GPIO, 1);
 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
-			break;
-		case 1:
-			imx_iomux_v3_setup_multiple_pads(
-				usdhc3_emmc_pads, ARRAY_SIZE(usdhc3_emmc_pads));
-			gpio_request(USDHC3_PWR_GPIO, "usdhc3_pwr");
-			gpio_direction_output(USDHC3_PWR_GPIO, 0);
-			udelay(500);
-			gpio_direction_output(USDHC3_PWR_GPIO, 1);
-			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
 			break;
 		default:
 			printf("Warning: you configured more USDHC controllers"
 				"(%d) than supported by the board\n", i + 1);
 			return 0;
-			}
+		}
 
-			ret = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
-			if (ret)
-				return ret;
+		ret = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
+		if (ret)
+			return ret;
 	}
 
 	return 0;
