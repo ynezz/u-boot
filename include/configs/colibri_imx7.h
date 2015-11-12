@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Freescale Semiconductor, Inc.
- *               2015 Toradex AG                  
+ *               2015 Toradex AG
  *
  * Configuration settings for the Colibri iMX7 module.
  *
@@ -16,10 +16,15 @@
 #include <asm/imx-common/gpio.h>
 
 #define CONFIG_MX7
+#define CONFIG_SYS_THUMB_BUILD
+#define CONFIG_USE_ARCH_MEMCPY
+#define CONFIG_USE_ARCH_MEMSET
+
+#define CONFIG_COLIBRI_IMX7
 #define CONFIG_ROM_UNIFIED_SECTIONS
 #define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_DISPLAY_CPUINFO
-#define CONFIG_DISPLAY_BOARDINFO
+#define CONFIG_DISPLAY_BOARDINFO_LATE
 
 #define CONFIG_DBG_MONITOR
 /* uncomment for PLUGIN mode support */
@@ -38,6 +43,8 @@
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
 #define CONFIG_REVISION_TAG
+#define CONFIG_SERIAL_TAG
+#define CONFIG_SERIAL_TAG_BOARD
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(32 * SZ_1M)
@@ -49,11 +56,18 @@
 #define CONFIG_MXC_UART
 #define CONFIG_MXC_UART_BASE		UART1_IPS_BASE_ADDR
 
-/* allow to overwrite serial and ethaddr */
-#define CONFIG_ENV_OVERWRITE
-#define CONFIG_CONS_INDEX		1
-#define CONFIG_BAUDRATE			115200
+/* Make the HW version stuff available in u-boot env */
+#define CONFIG_VERSION_VARIABLE		/* ver environment variable */
+#define CONFIG_ENV_VARS_UBOOT_CONFIG
+#define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
+/* I2C configs */
+#define CONFIG_CMD_I2C
+#define CONFIG_SYS_I2C
+#define CONFIG_SYS_I2C_MXC
+#define CONFIG_SYS_I2C_SPEED		100000
+
+/* OCOTP Configs */
 #define CONFIG_CMD_FUSE
 #ifdef CONFIG_CMD_FUSE
 #define CONFIG_MXC_OCOTP
@@ -67,7 +81,10 @@
 #define CONFIG_MMC
 #define CONFIG_CMD_MMC
 #define CONFIG_GENERIC_MMC
+#define CONFIG_BOUNCE_BUFFER
+#define CONFIG_CMD_EXT2
 #define CONFIG_CMD_FAT
+#define CONFIG_FAT_WRITE
 #define CONFIG_DOS_PARTITION
 #define CONFIG_SUPPORT_EMMC_BOOT /* eMMC specific */
 
@@ -79,13 +96,16 @@
 #define CONFIG_CMD_NET
 #define CONFIG_FEC_MXC
 #define CONFIG_MII
-#define CONFIG_FEC_XCV_TYPE             RGMII
+#define CONFIG_FEC_XCV_TYPE             RMII
 #define CONFIG_ETHPRIME                 "FEC"
-#define CONFIG_FEC_MXC_PHYADDR          0
+#define CONFIG_FEC_MXC_PHYADDR          1
 
 #define CONFIG_PHYLIB
-#define CONFIG_PHY_BROADCOM
+#define CONFIG_PHY_MICREL
 #define CONFIG_FEC_DMA_MINALIGN		64
+#define CONFIG_TFTP_TSIZE
+#define CONFIG_IP_DEFRAG
+#define CONFIG_TFTP_BLOCKSIZE		16384
 
 /* ENET1 */
 #define IMX_FEC_BASE			ENET_IPS_BASE_ADDR
@@ -93,8 +113,6 @@
 /* PMIC */
 #define CONFIG_POWER
 #define CONFIG_POWER_I2C
-#define CONFIG_POWER_PFUZE300
-#define CONFIG_POWER_PFUZE300_I2C_ADDR	0x08
 
 #undef CONFIG_BOOTM_NETBSD
 #undef CONFIG_BOOTM_PLAN9
@@ -103,18 +121,59 @@
 #undef CONFIG_CMD_EXPORTENV
 #undef CONFIG_CMD_IMPORTENV
 
-/* I2C configs */
-#define CONFIG_CMD_I2C
-#define CONFIG_SYS_I2C
-#define CONFIG_SYS_I2C_MXC
-#define CONFIG_SYS_I2C_SPEED		100000
+/* USB Configs */
+/* Host */
+#define CONFIG_CMD_USB
+#define CONFIG_USB_EHCI
+#define CONFIG_USB_EHCI_MX7
+#define CONFIG_USB_STORAGE
+#define CONFIG_USB_HOST_ETHER
+#define CONFIG_USB_ETHER_ASIX
+#define CONFIG_USB_MAX_CONTROLLER_COUNT		2
+#define CONFIG_EHCI_HCD_INIT_AFTER_RESET	/* For OTG port */
+#define CONFIG_MXC_USB_PORTSC		(PORT_PTS_UTMI | PORT_PTS_PTW)
+#define CONFIG_MXC_USB_FLAGS		0
+#define CONFIG_USB_KEYBOARD
+#ifdef CONFIG_USB_KEYBOARD
+#define CONFIG_SYS_USB_EVENT_POLL
+#endif /* CONFIG_USB_KEYBOARD */
+/* Client */
+#define CONFIG_USB_GADGET
+#define CONFIG_USB_GADGET_VBUS_DRAW	2
+#define CONFIG_CI_UDC
+#define CONFIG_USBD_HS
+#define CONFIG_USB_GADGET_DUALSPEED
+
+#define CONFIG_CMD_USB_MASS_STORAGE
+#define CONFIG_USB_GADGET_MASS_STORAGE
+#define CONFIG_USBDOWNLOAD_GADGET
+#define CONFIG_TRDX_VID			0x1B67
+#define CONFIG_TRDX_PID_COLIBRI_IMX6	0x0027
+#define CONFIG_G_DNL_MANUFACTURER	"Toradex"
+#define CONFIG_G_DNL_VENDOR_NUM		CONFIG_TRDX_VID
+#define CONFIG_G_DNL_PRODUCT_NUM	CONFIG_TRDX_PID_COLIBRI_IMX6
+/* USB DFU */
+#define CONFIG_CMD_DFU
+#define CONFIG_DFU_FUNCTION
+#define CONFIG_DFU_MMC
+
+/* allow to overwrite serial and ethaddr */
+#define CONFIG_ENV_OVERWRITE
+#define CONFIG_CONS_INDEX		1
+#define CONFIG_BAUDRATE			115200
 
 /* Command definition */
 #include <config_cmd_default.h>
 
 #undef CONFIG_CMD_IMLS
 
-#define CONFIG_BOOTDELAY		3
+#undef CONFIG_BOOTDELAY
+#define CONFIG_BOOTDELAY		1
+#undef CONFIG_IPADDR
+#define CONFIG_IPADDR			192.168.10.2
+#define CONFIG_NETMASK			255.255.255.0
+#undef CONFIG_SERVERIP
+#define CONFIG_SERVERIP			192.168.10.1
 
 #define CONFIG_LOADADDR			0x80800000
 #define CONFIG_SYS_TEXT_BASE		0x87800000
@@ -192,6 +251,8 @@
 	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
+	"ethaddr=00:01:02:03:04:05\0" \
+        "splashpos=m,m\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
 	"fdt_file=imx7d-sdb.dtb\0" \
@@ -267,7 +328,7 @@
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
-#define CONFIG_SYS_PROMPT		"=> "
+#define CONFIG_SYS_PROMPT		"Colibri iMX7 # "
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE		1024
 
@@ -276,6 +337,7 @@
 #define CONFIG_SYS_MAXARGS		256
 #define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
 
+#define CONFIG_SYS_ALT_MEMTEST
 #define CONFIG_CMD_MEMTEST
 #define CONFIG_SYS_MEMTEST_START	0x80000000
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 0x1c000000)
@@ -386,7 +448,7 @@
 #ifdef CONFIG_SYS_USE_NAND
 #define CONFIG_SYS_FSL_USDHC_NUM	1
 #else
-#define CONFIG_SYS_FSL_USDHC_NUM	2
+#define CONFIG_SYS_FSL_USDHC_NUM	1
 #endif
 #define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC1 */
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
@@ -440,17 +502,6 @@
 #define CONFIG_WAVEFORM_BUF_SIZE		0x400000
 #endif
 
-/* USB Configs */
-#define CONFIG_CMD_USB
-#define CONFIG_USB_EHCI
-#define CONFIG_USB_EHCI_MX7
-#define CONFIG_USB_STORAGE
-#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
-#define CONFIG_USB_HOST_ETHER
-#define CONFIG_USB_ETHER_ASIX
-#define CONFIG_MXC_USB_PORTSC  (PORT_PTS_UTMI | PORT_PTS_PTW)
-#define CONFIG_MXC_USB_FLAGS   0
-#define CONFIG_USB_MAX_CONTROLLER_COUNT 2
 
 #define CONFIG_IMX_THERMAL
 
