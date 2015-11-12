@@ -184,19 +184,24 @@ static iomux_v3_cfg_t const lcd_pads[] = {
 	MX7D_PAD_LCD_DATA15__LCD_DATA15 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX7D_PAD_LCD_DATA16__LCD_DATA16 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX7D_PAD_LCD_DATA17__LCD_DATA17 | MUX_PAD_CTRL(LCD_PAD_CTRL),
+#if 0
 	MX7D_PAD_LCD_DATA18__LCD_DATA18 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX7D_PAD_LCD_DATA19__LCD_DATA19 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX7D_PAD_LCD_DATA20__LCD_DATA20 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX7D_PAD_LCD_DATA21__LCD_DATA21 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX7D_PAD_LCD_DATA22__LCD_DATA22 | MUX_PAD_CTRL(LCD_PAD_CTRL),
 	MX7D_PAD_LCD_DATA23__LCD_DATA23 | MUX_PAD_CTRL(LCD_PAD_CTRL),
-
-	MX7D_PAD_LCD_RESET__GPIO3_IO4	| MUX_PAD_CTRL(LCD_PAD_CTRL),
+#endif
 };
 
-static iomux_v3_cfg_t const pwm_pads[] = {
-	/* Use GPIO for Brightness adjustment, duty cycle = period */
-	MX7D_PAD_GPIO1_IO01__GPIO1_IO1 | MUX_PAD_CTRL(NO_PAD_CTRL),
+static iomux_v3_cfg_t const backlight_pads[] = {
+	/* Backlight On */
+	MX7D_PAD_SD1_WP__GPIO5_IO1 | MUX_PAD_CTRL(NO_PAD_CTRL),
+#define RGB_BACKLIGHT_GP IMX_GPIO_NR(5, 1)
+/* TODO PWM not GPIO */
+	MX7D_PAD_GPIO1_IO08__GPIO1_IO8  | MUX_PAD_CTRL(NO_PULLUP),
+	MX7D_PAD_ECSPI2_MOSI__GPIO4_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
+#define RGB_BACKLIGHTPWM_GP IMX_GPIO_NR(1, 8)
 };
 
 struct lcd_panel_info_t {
@@ -210,32 +215,47 @@ void do_enable_parallel_lcd(struct lcd_panel_info_t const *dev)
 {
 	imx_iomux_v3_setup_multiple_pads(lcd_pads, ARRAY_SIZE(lcd_pads));
 
-	imx_iomux_v3_setup_multiple_pads(pwm_pads, ARRAY_SIZE(pwm_pads));
-
-	/* Reset LCD */
-	gpio_direction_output(IMX_GPIO_NR(3, 4) , 0);
-	udelay(500);
-	gpio_direction_output(IMX_GPIO_NR(3, 4) , 1);
+	imx_iomux_v3_setup_multiple_pads(backlight_pads, ARRAY_SIZE(backlight_pads));
 
 	/* Set Brightness to high */
-	gpio_direction_output(IMX_GPIO_NR(1, 1) , 1);
+	gpio_direction_output(RGB_BACKLIGHT_GP , 1);
+	gpio_direction_output(RGB_BACKLIGHTPWM_GP , 0);
 }
 
 static struct lcd_panel_info_t const displays[] = {{
 	.lcdif_base_addr = ELCDIF1_IPS_BASE_ADDR,
-	.depth = 24,
+	.depth = 18,
 	.enable	= do_enable_parallel_lcd,
 	.mode	= {
-		.name			= "TFT43AB",
-		.xres           = 480,
-		.yres           = 272,
-		.pixclock       = 108695,
-		.left_margin    = 8,
-		.right_margin   = 4,
-		.upper_margin   = 2,
-		.lower_margin   = 4,
-		.hsync_len      = 41,
-		.vsync_len      = 10,
+		.name           = "vga-rgb",
+		.refresh        = 60,
+		.xres           = 640,
+		.yres           = 480,
+		.pixclock       = 39722,
+		.left_margin    = 48,
+		.right_margin   = 16,
+		.upper_margin   = 33,
+		.lower_margin   = 10,
+		.hsync_len      = 96,
+		.vsync_len      = 2,
+		.sync           = 0,
+		.vmode          = FB_VMODE_NONINTERLACED
+} }, {
+	.lcdif_base_addr = ELCDIF1_IPS_BASE_ADDR,
+	.depth = 18,
+	.enable	= do_enable_parallel_lcd,
+	.mode	= {
+		.name           = "wvga-rgb",
+		.refresh        = 60,
+		.xres           = 800,
+		.yres           = 480,
+		.pixclock       = 25000,
+		.left_margin    = 40,
+		.right_margin   = 88,
+		.upper_margin   = 33,
+		.lower_margin   = 10,
+		.hsync_len      = 128,
+		.vsync_len      = 2,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
 } } };
