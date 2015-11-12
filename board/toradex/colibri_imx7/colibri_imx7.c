@@ -564,19 +564,23 @@ iomux_v3_cfg_t const usb_otg1_pads[] = {
 };
 
 iomux_v3_cfg_t const usb_otg2_pads[] = {
-	MX7D_PAD_UART3_CTS_B__USB_OTG2_PWR | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX7D_PAD_UART3_CTS_B__GPIO4_IO7 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
+#define USBH_PWR IMX_GPIO_NR(4, 7)
 
 int board_ehci_hcd_init(int port)
 {
 	switch (port) {
 	case 0:
+#if 0 /* TODO make this a USB device */
 		imx_iomux_v3_setup_multiple_pads(usb_otg1_pads,
 						 ARRAY_SIZE(usb_otg1_pads));
+#endif
 		break;
 	case 1:
 		imx_iomux_v3_setup_multiple_pads(usb_otg2_pads,
 						 ARRAY_SIZE(usb_otg2_pads));
+		gpio_direction_output(USBH_PWR , 1);
 		break;
 	default:
 		printf("MXC USB port %d not yet supported\n", port);
@@ -584,6 +588,24 @@ int board_ehci_hcd_init(int port)
 	}
 	return 0;
 }
+
+int board_ehci_power(int port, int on)
+{
+	switch (port) {
+	case 0:
+		break;
+	case 1:
+		imx_iomux_v3_setup_multiple_pads(usb_otg2_pads,
+						 ARRAY_SIZE(usb_otg2_pads));
+		gpio_direction_output(USBH_PWR , !on);
+		break;
+	default:
+		printf("MXC USB port %d not yet supported\n", port);
+		return 1;
+	}
+	return 0;
+}
+
 #endif
 
 #ifdef CONFIG_FASTBOOT
