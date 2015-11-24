@@ -208,13 +208,6 @@
 #define CONFIG_MFG_NAND_PARTITION ""
 #endif
 
-#ifdef CONFIG_VIDEO
-#define CONFIG_VIDEO_MODE \
-	"panel=TFT43AB\0"
-#else
-#define CONFIG_VIDEO_MODE ""
-#endif
-
 #define CONFIG_MFG_ENV_SETTINGS \
 	"mfgtool_args=setenv bootargs console=${console},${baudrate} " \
 		"rdinit=/linuxrc " \
@@ -232,7 +225,6 @@
 #if defined(CONFIG_SYS_BOOT_NAND)
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
-	CONFIG_VIDEO_MODE \
 	"fdt_addr=0x83000000\0" \
 	"fdt_high=0xffffffff\0"	  \
 	"console=ttymxc0\0" \
@@ -247,7 +239,6 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
 	UPDATE_M4_ENV \
-	CONFIG_VIDEO_MODE \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
 	"console=ttymxc0\0" \
