@@ -7,6 +7,11 @@
 #include "configblock.h"
 #include <common.h>
 
+#if defined(CONFIG_TARGET_APALIS_IMX6) || defined(CONFIG_TARGET_COLIBRI_IMX6)
+#include <asm/arch/sys_proto.h>
+#else
+#define is_cpu_type(cpu) (0)
+#endif
 #include <cli.h>
 #include <malloc.h>
 #include <mmc.h>
@@ -227,18 +232,18 @@ static int get_cfgblock_interactive(void)
 		if (it == 'y' || it == 'Y')
 			trdx_hw_tag.prodid = APALIS_IMX6Q_IT;
 		else
-			if (gd->ram_size == 0x40000000)
+			if (is_cpu_type(MXC_CPU_MX6Q))
 				trdx_hw_tag.prodid = APALIS_IMX6Q;
 			else
 				trdx_hw_tag.prodid = APALIS_IMX6D;
 #else
 		if (it == 'y' || it == 'Y')
-			if (gd->ram_size == 0x20000000)
+			if (is_cpu_type(MXC_CPU_MX6DL))
 				trdx_hw_tag.prodid = COLIBRI_IMX6DL_IT;
 			else
 				trdx_hw_tag.prodid = COLIBRI_IMX6S_IT;
                 else
-			if (gd->ram_size == 0x20000000)
+			if (is_cpu_type(MXC_CPU_MX6DL))
 				trdx_hw_tag.prodid = COLIBRI_IMX6DL;
 			else
 				trdx_hw_tag.prodid = COLIBRI_IMX6S;
