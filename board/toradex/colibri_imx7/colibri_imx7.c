@@ -532,7 +532,7 @@ static const struct boot_mode board_boot_modes[] = {
 	/* 4 bit bus width */
 	{"sd1", MAKE_CFGVAL(0x10, 0x10, 0x00, 0x00)},
 	{"emmc", MAKE_CFGVAL(0x10, 0x2a, 0x00, 0x00)},
-	/* TODO: Nand */
+	{"nand", MAKE_CFGVAL(0x34, 0x00, 0x00, 0x00)},
 	{"qspi", MAKE_CFGVAL(0x00, 0x40, 0x00, 0x00)},
 	{NULL,   0},
 };
