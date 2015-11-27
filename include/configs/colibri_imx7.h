@@ -52,6 +52,7 @@
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_BOARD_LATE_INIT
 #define CONFIG_MXC_GPIO
+#define CONFIG_CMD_GPIO
 
 #define CONFIG_MXC_UART
 #define CONFIG_MXC_UART_BASE		UART1_IPS_BASE_ADDR
@@ -82,11 +83,13 @@
 #define CONFIG_CMD_MMC
 #define CONFIG_GENERIC_MMC
 #define CONFIG_BOUNCE_BUFFER
+#define CONFIG_CMD_FS_GENERIC
 #define CONFIG_CMD_EXT2
+#define CONFIG_CMD_EXT3
+#define CONFIG_CMD_EXT4
 #define CONFIG_CMD_FAT
 #define CONFIG_FAT_WRITE
 #define CONFIG_DOS_PARTITION
-#define CONFIG_SUPPORT_EMMC_BOOT /* eMMC specific */
 
 #define PHYS_SDRAM_SIZE			SZ_2G
 
@@ -161,6 +164,7 @@
 #define CONFIG_ENV_OVERWRITE
 #define CONFIG_CONS_INDEX		1
 #define CONFIG_BAUDRATE			115200
+#define CONFIG_CMD_ASKENV
 
 /* Command definition */
 #include <config_cmd_default.h>
@@ -182,6 +186,37 @@
 #define CONFIG_CMD_BOOTAUX /* Boot M4 */
 #define CONFIG_CMD_SETEXPR
 
+#define SD_BOOTCMD \
+	"sdargs=root=/dev/mmcblk0p2 rw rootwait\0"	\
+	"sdboot=run setup; setenv bootargs ${defargs} ${sdargs} " \
+	"${setupargs} ${vidargs}; echo Booting from MMC/SD card...; " \
+	"load mmc 0:1 ${kernel_addr_r} ${kernel_file} && " \
+	"load mmc 0:1 ${fdt_addr_r} ${fdt_file} && " \
+	"run fdt_fixup && bootz ${kernel_addr_r} - ${fdt_addr_r}\0" \
+
+#define NFS_BOOTCMD \
+	"nfsargs=ip=:::::eth0: root=/dev/nfs\0"	\
+	"nfsboot=run setup; " \
+		"setenv bootargs ${defargs} ${nfsargs} " \
+		"${setupargs} ${vidargs}; echo Booting from NFS...;" \
+		"dhcp ${kernel_addr_r} && "	\
+		"tftp ${fdt_addr_r} ${fdt_file} && " \
+		"run fdt_fixup && bootz ${kernel_addr_r} - ${fdt_addr_r}\0" \
+
+#define UBI_BOOTCMD	\
+	"ubiargs=ubi.mtd=ubi root=ubi0:rootfs rootfstype=ubifs " \
+		"ubi.fm_autoconvert=1\0" \
+	"ubiboot=run setup; " \
+		"setenv bootargs ${defargs} ${ubiargs} " \
+		"${setupargs} ${vidargs}; echo Booting from NAND...; " \
+		"ubi part ubi && ubifsmount ubi0:rootfs && " \
+		"ubifsload ${kernel_addr_r} /boot/${kernel_file} && " \
+		"ubifsload ${fdt_addr_r} /boot/${fdt_file} && " \
+		"run fdt_fixup && bootz ${kernel_addr_r} - ${fdt_addr_r}\0" \
+
+#define CONFIG_BOOTCOMMAND "run ubiboot; run sdboot; run nfsboot"
+
+
 #ifdef CONFIG_CMD_BOOTAUX
 #define UPDATE_M4_ENV \
 	"m4image=m4_qspi.bin\0" \
@@ -202,27 +237,9 @@
 #endif
 
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
-#ifdef CONFIG_SYS_BOOT_NAND
-#define CONFIG_MFG_NAND_PARTITION "mtdparts=gpmi-nand:64m(boot),16m(kernel),16m(dtb),-(rootfs) "
-#else
-#define CONFIG_MFG_NAND_PARTITION ""
-#endif
 
-#define CONFIG_MFG_ENV_SETTINGS \
-	"mfgtool_args=setenv bootargs console=${console},${baudrate} " \
-		"rdinit=/linuxrc " \
-		"g_mass_storage.stall=0 g_mass_storage.removable=1 " \
-		"g_mass_storage.idVendor=0x066F g_mass_storage.idProduct=0x37FF "\
-		"g_mass_storage.iSerialNumber=\"\" "\
-		CONFIG_MFG_NAND_PARTITION \
-		"clk_ignore_unused "\
-		"\0" \
-	"initrd_addr=0x83800000\0" \
-	"initrd_high=0xffffffff\0" \
-	"mtdparts=" MTDPARTS_DEFAULT "\0" \
-	"bootcmd_mfg=run mfgtool_args;bootz ${loadaddr} ${initrd_addr} ${fdt_addr};\0" \
 
-#if defined(CONFIG_SYS_BOOT_NAND)
+#if 0
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS \
 	"fdt_addr=0x83000000\0" \
@@ -235,21 +252,44 @@
 		"nand read ${fdt_addr} 0x5000000 0x100000;"\
 		"bootz ${loadaddr} - ${fdt_addr}\0"
 
-#else
+#endif
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	CONFIG_MFG_ENV_SETTINGS \
 	UPDATE_M4_ENV \
-	"script=boot.scr\0" \
-	"image=zImage\0" \
+	NFS_BOOTCMD \
+	SD_BOOTCMD \
+	UBI_BOOTCMD \
 	"console=ttymxc0\0" \
+	"defargs=\0" \
 	"ethaddr=00:01:02:03:04:05\0" \
-        "splashpos=m,m\0" \
-	"fdt_high=0xffffffff\0" \
-	"initrd_high=0xffffffff\0" \
-	"fdt_file=imx7d-colibri.dtb\0" \
 	"fdt_addr=0x83000000\0" \
-	"boot_fdt=try\0" \
+	"fdt_addr_r=0x83000000\0" \
+	"fdt_file=imx7d-colibri.dtb\0" \
+	"fdt_fixup=;\0" \
+	"fdt_high=0xffffffff\0" \
+	"image=zImage\0" \
+	"initrd_high=0xffffffff\0" \
 	"ip_dyn=yes\0" \
+	"kernel_addr_r=80800000\0" \
+	"kernel_file=zImage\0" \
+	"mtdparts=" MTDPARTS_DEFAULT "\0" \
+	"setethupdate=if env exists ethaddr; then; else setenv ethaddr " \
+		"00:14:2d:00:00:00; fi; tftpboot ${loadaddr} " \
+		"flash_eth.img && source ${loadaddr}\0" \
+	"setsdupdate=mmc rescan && setenv interface mmc && " \
+		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
+		"source ${loadaddr}\0" \
+	"setup=setenv setupargs " \
+		"console=tty1 console=${console}" \
+		",${baudrate}n8 ${memargs} consoleblank=0 ${mtdparts}\0" \
+	"setupdate=run setsdupdate || run setusbupdate || run setethupdate\0" \
+	"setusbupdate=usb start && setenv interface usb && " \
+		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
+		"source ${loadaddr}\0" \
+        "splashpos=m,m\0" \
+
+
+#if 0
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
@@ -301,7 +341,7 @@
 		"else " \
 			"bootz; " \
 		"fi;\0"
-
+#if 0
 #define CONFIG_BOOTCOMMAND \
 	   "mmc dev ${mmcdev};" \
 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
@@ -314,6 +354,7 @@
 			   "fi; " \
 		   "fi; " \
 	   "else run netboot; fi"
+#endif
 #endif
 
 /* Miscellaneous configurable options */
@@ -469,30 +510,6 @@
 #define	CONFIG_VIDEO_BMP_RLE8
 #define CONFIG_VIDEO_BMP_LOGO
 #endif
-
-/* #define CONFIG_SPLASH_SCREEN*/
-/* #define CONFIG_MXC_EPDC*/
-
-/*
- * SPLASH SCREEN Configs
- */
-#if defined(CONFIG_SPLASH_SCREEN) && defined(CONFIG_MXC_EPDC)
-/*
- * Framebuffer and LCD
- */
-#define	CONFIG_CFB_CONSOLE
-#define CONFIG_CMD_BMP
-#define CONFIG_LCD
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
-
-#undef LCD_TEST_PATTERN
-/* #define CONFIG_SPLASH_IS_IN_MMC			1 */
-#define LCD_BPP					LCD_MONOCHROME
-/* #define CONFIG_SPLASH_SCREEN_ALIGN		1 */
-
-#define CONFIG_WAVEFORM_BUF_SIZE		0x400000
-#endif
-
 
 #define CONFIG_IMX_THERMAL
 
