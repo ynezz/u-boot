@@ -346,8 +346,11 @@
 #define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
-#define CONFIG_ENV_OFFSET		(512 * 1024)
+/* Environment in eMMC, before config block at the end of 1st "boot sector" */
+#define CONFIG_ENV_OFFSET		(-CONFIG_ENV_SIZE + \
+					 CONFIG_TRDX_CFG_BLOCK_OFFSET)
 #define CONFIG_SYS_MMC_ENV_DEV		0
+#define CONFIG_SYS_MMC_ENV_PART		1
 #endif
 
 #define CONFIG_OF_LIBFDT
