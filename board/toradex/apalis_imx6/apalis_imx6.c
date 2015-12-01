@@ -32,7 +32,7 @@
 #include <i2c.h>
 
 #include "../common/configblock.h"
-#ifdef TRDX_CMD_IMX_MFGR
+#ifdef CONFIG_TRDX_CMD_IMX_MFGR
 #include "pf0100.h"
 #endif
 
@@ -785,7 +785,7 @@ int board_init(void)
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info_loc);
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info3);
 
-#ifdef TRDX_CMD_IMX_MFGR
+#ifdef CONFIG_TRDX_CMD_IMX_MFGR
 	(void) pmic_init();
 #endif
 
