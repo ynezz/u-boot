@@ -35,6 +35,9 @@ choice
 	prompt "MX6 board select"
 	optional
 
+config TARGET_APALIS_IMX6
+	bool "Toradex Apalis iMX6 board"
+
 config TARGET_ARISTAINETOS
 	bool "aristainetos"
 
@@ -179,6 +182,7 @@ source "board/seco/Kconfig"
 source "board/solidrun/mx6cuboxi/Kconfig"
 source "board/tbs/tbs2910/Kconfig"
 source "board/tqc/tqma6/Kconfig"
+source "board/toradex/apalis_imx6/Kconfig"
 source "board/udoo/Kconfig"
 source "board/wandboard/Kconfig"
 source "board/warp/Kconfig"
