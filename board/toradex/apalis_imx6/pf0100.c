@@ -60,11 +60,9 @@ unsigned pmic_init(void)
 
 		for(i=0; i<16; i++)
 			printf("\t%x",i);
-		for(j=0; j<0x80; )
-		{
+		for(j=0; j<0x80; ) {
 			printf("\n%2x",j);
-			for(i=0; i<16; i++)
-			{
+			for(i=0; i<16; i++) {
 				i2c_read(PFUZE100_I2C_ADDR, j+i, 1, &val, 1);
 				printf("\t%2x", val);
 			}
@@ -79,11 +77,9 @@ unsigned pmic_init(void)
 			return 0;
 		}
 
-		for(j=0x80; j<0x100; )
-		{
+		for(j=0x80; j<0x100; ) {
 			printf("\n%2x",j);
-			for(i=0; i<16; i++)
-			{
+			for(i=0; i<16; i++) {
 				i2c_read(PFUZE100_I2C_ADDR, j+i, 1, &val, 1);
 				printf("\t%2x", val);
 			}
@@ -98,11 +94,9 @@ unsigned pmic_init(void)
 			return 0;
 		}
 
-		for(j=0x80; j<0x100; )
-		{
+		for(j=0x80; j<0x100; ) {
 			printf("\n%2x",j);
-			for(i=0; i<16; i++)
-			{
+			for(i=0; i<16; i++) {
 				i2c_read(PFUZE100_I2C_ADDR, j+i, 1, &val, 1);
 				printf("\t%2x", val);
 			}
@@ -182,7 +176,7 @@ int pf0100_prog(void)
 		return 1;
 	}
 	/* set up gpio to manipulate vprog, initially off */
-	imx_iomux_v3_setup_multiple_pads(pmic_prog_pads, 
+	imx_iomux_v3_setup_multiple_pads(pmic_prog_pads,
 		ARRAY_SIZE(pmic_prog_pads));
 	gpio_direction_output(PMIC_PROG_VOLTAGE, 0);
 
@@ -207,8 +201,8 @@ int pf0100_prog(void)
 			udelay(pmic_otp_prog[i].value * 1000);
 			break;
 		case pmic_vpgm:
-			gpio_direction_output(IMX_GPIO_NR(2, 4),
-				 pmic_otp_prog[i].value);
+			gpio_direction_output(PMIC_PROG_VOLTAGE,
+				pmic_otp_prog[i].value);
 			break;
 		case pmic_pwr:
 			/* TODO */
