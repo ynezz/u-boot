@@ -346,6 +346,7 @@
 #endif
 
 #define CONFIG_OF_LIBFDT
+#define CONFIG_OF_SYSTEM_SETUP
 
 #ifndef CONFIG_SYS_DCACHE_OFF
 #define CONFIG_CMD_CACHE
