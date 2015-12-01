@@ -368,4 +368,6 @@
 #define CONFIG_SUPPORT_RAW_INITRD
 #define CONFIG_CMD_FS_GENERIC
 
+#define CONFIG_CRC32_VERIFY
+
 #endif	/* __CONFIG_H */
