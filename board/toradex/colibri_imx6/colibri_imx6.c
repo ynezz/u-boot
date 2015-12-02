@@ -708,7 +708,7 @@ int do_patch_ddr_size(cmd_tbl_t *cmdtp, int flag, int argc,
 		puts("done.\n");
 	else
 		puts("failed.\n");
-	return 0;
+	return CMD_RET_SUCCESS;
 }
 
 U_BOOT_CMD(

@@ -152,13 +152,13 @@ unsigned pmic_init(void)
 
 int pf0100_prog(void)
 {
-	unsigned char bus = 1;
-	unsigned char val;
 	unsigned i;
+	unsigned char val;
+	unsigned char bus = 1;
 
 	if(pmic_init() == 3) {
 		puts("PMIC already programmed, exiting\n");
-		return 1;
+		return CMD_RET_FAILURE;
 	}
 	/* set up gpio to manipulate vprog, initially off */
 	imx_iomux_v3_setup_multiple_pads(pmic_prog_pads,
@@ -168,7 +168,7 @@ int pf0100_prog(void)
 	if(!(0 == i2c_set_bus_num(bus) && (0 == i2c_probe(PFUZE100_I2C_ADDR))))
 	{
 		puts("i2c bus failed\n");
-		return 1;
+		return CMD_RET_FAILURE;
 	}
 
 	for (i=0; i<ARRAY_SIZE(pmic_otp_prog); i++) {
@@ -179,7 +179,7 @@ int pf0100_prog(void)
 					1, &val, 1)) {
 				printf("i2c write failed, reg 0x%2x, value"
 					"0x%2x\n", pmic_otp_prog[i].reg, val);
-				return 1;
+				return CMD_RET_FAILURE;
 			}
 			break;
 		case pmic_delay:
@@ -194,19 +194,20 @@ int pf0100_prog(void)
 			break;
 		}
 	}
-	return 0;
+	return CMD_RET_SUCCESS;
 }
-
 
 int do_pf0100_prog(cmd_tbl_t *cmdtp, int flag, int argc,
 		char * const argv[])
 {
+	int ret;
 	puts("Programming PMIC OTP...");
-	if(!pf0100_prog())
+	ret = pf0100_prog();
+	if (ret == CMD_RET_SUCCESS)
 		puts("done.\n");
 	else
 		puts("failed.\n");
-	return 0;
+	return ret;
 }
 
 U_BOOT_CMD(
