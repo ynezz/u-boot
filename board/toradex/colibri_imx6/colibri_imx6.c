@@ -396,6 +396,7 @@ int board_eth_init(bd_t *bis)
 		puts("no PHY found\n");
 		return 0;
 	}
+	phy_reset(phydev);
 	printf("using PHY at %d\n", phydev->addr);
 	ret  = fec_probe(bis, -1, base, bus, phydev);
 	if (ret) {
