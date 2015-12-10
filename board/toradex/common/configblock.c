@@ -8,6 +8,7 @@
 #include <common.h>
 
 #include <cli.h>
+#include <console.h>
 #include <malloc.h>
 #include <mmc.h>
 #include <nand.h>
