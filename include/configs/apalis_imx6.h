@@ -10,21 +10,10 @@
 #define __CONFIG_H
 
 #include "mx6_common.h"
-#define CONFIG_MX6
-#define CONFIG_SYS_THUMB_BUILD
-#define CONFIG_USE_ARCH_MEMCPY
-#define CONFIG_USE_ARCH_MEMSET
 
 #define CONFIG_APALIS_IMX6
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO_LATE
-
-#define CONFIG_SYS_GENERIC_BOARD
-
-/* Define CONFIG_APALIS_IMX6_V1_0 to use the UARTs in DCE mode unconditionally.
-   Otherwise U-Boot uses the Configblock to fall back to DCE on V1.0 HW */
-/* #define CONFIG_APALIS_IMX6_V1_0 */
-
 
 #define CONFIG_MACH_TYPE		4886
 
@@ -100,7 +89,6 @@
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_MII
-#define CONFIG_CMD_NET
 #define CONFIG_FEC_MXC
 #define CONFIG_MII
 #define IMX_FEC_BASE			ENET_BASE_ADDR
@@ -130,14 +118,14 @@
 #endif /* CONFIG_USB_KEYBOARD */
 /* Client */
 #define CONFIG_USB_GADGET
+#define CONFIG_USB_GADGET_DOWNLOAD
 #define CONFIG_USB_GADGET_VBUS_DRAW	2
 #define CONFIG_CI_UDC
 #define CONFIG_USBD_HS
 #define CONFIG_USB_GADGET_DUALSPEED
 
 #define CONFIG_CMD_USB_MASS_STORAGE
-#define CONFIG_USB_GADGET_MASS_STORAGE
-#define CONFIG_USBDOWNLOAD_GADGET
+#define CONFIG_USB_FUNCTION_MASS_STORAGE
 #define CONFIG_TRDX_VID			0x1B67
 #define CONFIG_TRDX_PID_APALIS_IMX6	0x0015
 #define CONFIG_G_DNL_MANUFACTURER	"Toradex"
@@ -145,15 +133,13 @@
 #define CONFIG_G_DNL_PRODUCT_NUM	CONFIG_TRDX_PID_APALIS_IMX6
 /* USB DFU */
 #define CONFIG_CMD_DFU
-#define CONFIG_DFU_FUNCTION
 #define CONFIG_DFU_MMC
+#define CONFIG_USB_FUNCTION_DFU
 
 /* Miscellaneous commands */
 #define CONFIG_CMD_BMODE
-#define CONFIG_CMD_SETEXPR
 #define CONFIG_MXC_GPIO
 #define CONFIG_CMD_GPIO
-#define CONFIG_CMD_ELF
 
 /* Framebuffer and LCD */
 #define CONFIG_VIDEO
@@ -178,7 +164,6 @@
 #define CONFIG_BAUDRATE			115200
 
 /* Command definition */
-#include <config_cmd_default.h>
 #undef CONFIG_CMD_LOADB
 #undef CONFIG_CMD_LOADS
 #undef CONFIG_CMD_NFS
@@ -311,10 +296,7 @@
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
-#define CONFIG_SYS_PROMPT		"Apalis iMX6 # "
 #define CONFIG_AUTO_COMPLETE
-#define CONFIG_SYS_CBSIZE		1024
-#define CONFIG_SYS_MAXARGS		48
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
 
 #define CONFIG_SYS_ALT_MEMTEST
