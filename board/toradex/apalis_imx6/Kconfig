@@ -16,19 +16,27 @@ config SYS_VENDOR
 	default "toradex"
 
 config TRDX_CFG_BLOCK
+	bool
 	default y
 
 config TRDX_HAVE_MMC
+	bool
+	default y
+
+config TRDX_CFG_BLOCK_IS_IN_MMC
+	bool
 	default y
 
 config TRDX_CFG_BLOCK_DEV
+	int
 	default "0"
 
 config TRDX_CFG_BLOCK_PART
+	int
 	default "1"
 
-# Toradex Configblock in eMMC, at the end of 1st "boot sector"
 config TRDX_CFG_BLOCK_OFFSET
+	int
 	default "-512"
 
 menuconfig TRDX_CMD_IMX_MFGR
