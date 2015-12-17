@@ -33,11 +33,13 @@ config TRDX_CFG_BLOCK_DEV
 
 config TRDX_CFG_BLOCK_PART
 	int
-	default "1"
+#	default "1"
+	default "0"
 
 config TRDX_CFG_BLOCK_OFFSET
 	int
-	default "-512"
+	default "655360"
+#	default "-512"
 
 menuconfig TRDX_CMD_IMX_MFGR
 	bool "Enable factory testing commands for Toradex iMX 6 modules"
