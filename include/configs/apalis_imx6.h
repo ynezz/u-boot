@@ -11,8 +11,14 @@
 
 #include "mx6_common.h"
 
+#define CONFIG_SYS_THUMB_BUILD
+#define CONFIG_USE_ARCH_MEMCPY
+#define CONFIG_USE_ARCH_MEMSET
 #define CONFIG_APALIS_IMX6
 #define CONFIG_DISPLAY_CPUINFO
+
+/* we need eMMC initialized for board info */
+#undef CONFIG_DISPLAY_BOARDINFO
 #define CONFIG_DISPLAY_BOARDINFO_LATE
 
 #define CONFIG_MACH_TYPE		4886
@@ -27,14 +33,11 @@
 #define CONFIG_SERIAL_TAG
 
 /* Size of malloc() pool */
-#define CONFIG_SYS_MALLOC_LEN		(32 * 1024 * 1024)
+#define CONFIG_SYS_MALLOC_LEN		(32 * SZ_1M)
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_BOARD_LATE_INIT
 #define CONFIG_MISC_INIT_R
-
-#define CONFIG_MXC_UART
-#define CONFIG_MXC_UART_BASE		UART1_BASE
 
 /* Make the HW version stuff available in U-Boot env */
 #define CONFIG_VERSION_VARIABLE		/* ver environment variable */
@@ -45,6 +48,9 @@
 #define CONFIG_CMD_I2C
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_MXC
+#define CONFIG_SYS_I2C_MXC_I2C1
+#define CONFIG_SYS_I2C_MXC_I2C2
+#define CONFIG_SYS_I2C_MXC_I2C3
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* OCOTP Configs */
@@ -54,14 +60,13 @@
 #endif
 
 /* MMC Configs */
+#define CONFIG_MMC
+#define CONFIG_CMD_MMC
 #define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC
 #define CONFIG_SYS_FSL_ESDHC_ADDR	0
 #define CONFIG_SYS_FSL_USDHC_NUM	3
-
 #define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
-#define CONFIG_MMC
-#define CONFIG_CMD_MMC
 #define CONFIG_GENERIC_MMC
 #define CONFIG_BOUNCE_BUFFER
 #define CONFIG_CMD_EXT2
@@ -93,8 +98,8 @@
 #define CONFIG_MII
 #define IMX_FEC_BASE			ENET_BASE_ADDR
 #define CONFIG_FEC_XCV_TYPE		RGMII
-#define CONFIG_ETHPRIME			"FEC"
 #define CONFIG_FEC_MXC_PHYADDR		6
+#define CONFIG_ETHPRIME			"FEC"
 #define CONFIG_PHYLIB
 #define CONFIG_PHY_MICREL
 #define CONFIG_TFTP_TSIZE
@@ -131,15 +136,23 @@
 #define CONFIG_G_DNL_MANUFACTURER	"Toradex"
 #define CONFIG_G_DNL_VENDOR_NUM		CONFIG_TRDX_VID
 #define CONFIG_G_DNL_PRODUCT_NUM	CONFIG_TRDX_PID_APALIS_IMX6
+
 /* USB DFU */
 #define CONFIG_CMD_DFU
 #define CONFIG_DFU_MMC
 #define CONFIG_USB_FUNCTION_DFU
+#define CONFIG_DFU_MMC
 
 /* Miscellaneous commands */
 #define CONFIG_CMD_BMODE
+
+/* GPIO */
 #define CONFIG_MXC_GPIO
 #define CONFIG_CMD_GPIO
+
+/* Serial */
+#define CONFIG_MXC_UART
+#define CONFIG_MXC_UART_BASE		UART1_BASE
 
 /* Framebuffer and LCD */
 #define CONFIG_VIDEO
@@ -173,6 +186,7 @@
 #undef CONFIG_BOOTDELAY
 #define CONFIG_BOOTDELAY		1
 #define CONFIG_ZERO_BOOTDELAY_CHECK
+
 #undef CONFIG_IPADDR
 #define CONFIG_IPADDR			192.168.10.2
 #define CONFIG_NETMASK			255.255.255.0
@@ -253,12 +267,8 @@
 	"usbdtbload=setenv dtbparam; load usb 0:1 ${fdt_addr_r} " \
 		"${fdt_file} && setenv dtbparam \" - ${fdt_addr_r}\" && true\0"
 
-#ifndef CONFIG_APALIS_IMX6_V1_0
 #define FDT_FILE "imx6q-apalis-eval.dtb"
-#define FDT_FILE_V1_0 "imx6q-apalis_v1_0-eval.dtb"
-#else
-#define FDT_FILE "imx6q-apalis_v1_0-eval.dtb"
-#endif
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"bootcmd=run emmcboot ; echo ; echo emmcboot failed ; " \
 		"run nfsboot ; echo ; echo nfsboot failed ; " \

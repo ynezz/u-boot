@@ -308,24 +308,11 @@ static void setup_dtemode_uart(void)
 	setbits_le32((u32 *)(UART4_BASE + UFCR), UFCR_DCEDTE);
 	setbits_le32((u32 *)(UART5_BASE + UFCR), UFCR_DCEDTE);
 }
-static void setup_dcemode_uart(void)
-{
-	clrbits_le32((u32 *)(UART1_BASE + UFCR), UFCR_DCEDTE);
-	clrbits_le32((u32 *)(UART2_BASE + UFCR), UFCR_DCEDTE);
-	clrbits_le32((u32 *)(UART4_BASE + UFCR), UFCR_DCEDTE);
-	clrbits_le32((u32 *)(UART5_BASE + UFCR), UFCR_DCEDTE);
-}
 
 static void setup_iomux_dte_uart(void)
 {
 	setup_dtemode_uart();
 	imx_iomux_v3_setup_multiple_pads(uart1_pads_dte, ARRAY_SIZE(uart1_pads_dte));
-}
-
-static void setup_iomux_dce_uart(void)
-{
-	setup_dcemode_uart();
-	imx_iomux_v3_setup_multiple_pads(uart1_pads_dce, ARRAY_SIZE(uart1_pads_dce));
 }
 
 #ifdef CONFIG_USB_EHCI_MX6
@@ -578,35 +565,6 @@ static void do_enable_hdmi(struct display_info_t const *dev)
 	imx_enable_hdmi_phy();
 }
 
-static int detect_i2c(struct display_info_t const *dev)
-{
-	return ((0 == i2c_set_bus_num(dev->bus))
-		&&
-		(0 == i2c_probe(dev->addr)));
-}
-
-static void enable_lvds(struct display_info_t const *dev)
-{
-	struct iomuxc *iomux = (struct iomuxc *)
-				IOMUXC_BASE_ADDR;
-	u32 reg = readl(&iomux->gpr[2]);
-	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
-	writel(reg, &iomux->gpr[2]);
-	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
-	gpio_direction_output(RGB_BACKLIGHTPWM_GP, 0);
-	gpio_direction_output(RGB_BACKLIGHTPWM_OE, 0);
-}
-
-static void enable_rgb(struct display_info_t const *dev)
-{
-	imx_iomux_v3_setup_multiple_pads(
-		rgb_pads,
-		ARRAY_SIZE(rgb_pads));
-	gpio_direction_output(RGB_BACKLIGHT_GP, 1);
-	gpio_direction_output(RGB_BACKLIGHTPWM_GP, 0);
-	gpio_direction_output(RGB_BACKLIGHTPWM_OE, 0);
-}
-
 static void enable_vga(struct display_info_t const *dev)
 {
 	imx_iomux_v3_setup_multiple_pads(
@@ -634,46 +592,6 @@ struct display_info_t const displays[] = {{
 		.hsync_len      = 60,
 		.vsync_len      = 10,
 		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= -1,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= detect_i2c,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "wsvga-lvds",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 600,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= -1,
-	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= detect_i2c,
-	.enable	= enable_rgb,
-	.mode	= {
-		.name           = "wvga-rgb",
-		.refresh        = 57,
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 37037,
-		.left_margin    = 40,
-		.right_margin   = 60,
-		.upper_margin   = 10,
-		.lower_margin   = 10,
-		.hsync_len      = 20,
-		.vsync_len      = 10,
-		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
 	.bus	= -1,
@@ -758,11 +676,7 @@ int board_early_init_f(void)
 {
 	imx_iomux_v3_setup_multiple_pads(pwr_intb_pads,
 					ARRAY_SIZE(pwr_intb_pads));
-#ifndef CONFIG_APALIS_IMX6_V1_0
 	setup_iomux_dte_uart();
-#else
-	setup_iomux_dce_uart();
-#endif
 
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
@@ -811,25 +725,6 @@ int board_late_init(void)
 	rev = get_board_rev();
 	snprintf(env_str, ARRAY_SIZE(env_str), "%.4x", rev);
 	setenv("board_rev", env_str);
-#endif
-
-#ifndef CONFIG_APALIS_IMX6_V1_0
-	if((rev & 0xfff0) == 0x0100) {
-		char* fdt_env;
-
-		/* reconfigure the UART to DCE mode dynamically if on V1.0 HW */
-		setup_iomux_dce_uart();
-
-		/* if using the default device tree, use version for V1.0 HW */
-		fdt_env = getenv("fdt_file");
-		if((fdt_env != NULL) && (strcmp(FDT_FILE, fdt_env) == 0)) {
-			setenv("fdt_file", FDT_FILE_V1_0);
-			printf("patching fdt_file to " FDT_FILE_V1_0 "\n");
-#ifndef CONFIG_ENV_IS_NOWHERE
-			saveenv();
-#endif
-		}
-	}
 #endif
 
 	return 0;
