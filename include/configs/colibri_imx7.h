@@ -436,7 +436,7 @@
 #define CONFIG_MTD_DEVICE	/* needed for mtdparts commands */
 #define MTDIDS_DEFAULT		"nand0=gpmi-nand"
 #define MTDPARTS_DEFAULT	"mtdparts=gpmi-nand:"		\
-				"128k(mx7-bcb)ro,"		\
+				"4096k(mx7-bcb),"		\
 				"1408k(u-boot)ro,"		\
 				"512k(u-boot-env),"		\
 				"-(ubi)"
