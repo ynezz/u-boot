@@ -93,6 +93,19 @@ struct i2c_pads_info i2c_pad_info1 = {
 		.gp = IMX_GPIO_NR(1, 5),
 	},
 };
+/* I2C4 for Colibri I2C */
+struct i2c_pads_info i2c_pad_info4 = {
+	.scl = {
+		.i2c_mode = MX7D_PAD_ENET1_RGMII_TD2__I2C4_SCL | PC,
+		.gpio_mode = MX7D_PAD_ENET1_RGMII_TD2__GPIO7_IO8 | PC,
+		.gp = IMX_GPIO_NR(7, 8),
+	},
+	.sda = {
+		.i2c_mode = MX7D_PAD_ENET1_RGMII_TD3__I2C4_SDA | PC,
+		.gpio_mode = MX7D_PAD_ENET1_RGMII_TD3__GPIO7_IO9 | PC,
+		.gp = IMX_GPIO_NR(7, 9),
+	},
+};
 #endif
 
 int dram_init(void)
@@ -503,6 +516,7 @@ int board_early_init_f(void)
 
 #ifdef CONFIG_SYS_I2C_MXC
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
+	setup_i2c(3, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info4);
 #endif
 
 	return 0;
