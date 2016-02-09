@@ -412,7 +412,8 @@
 
 #ifdef CONFIG_SYS_USE_NAND
 #define CONFIG_CMD_NAND
-#define CONFIG_CMD_WRITEBCB
+#define CONFIG_CMD_WRITEBCB_MX7
+#define CONFIG_BCH
 #define CONFIG_CMD_NAND_TRIMFFS
 
 /* NAND stuff */
@@ -436,8 +437,8 @@
 #define CONFIG_MTD_DEVICE	/* needed for mtdparts commands */
 #define MTDIDS_DEFAULT		"nand0=gpmi-nand"
 #define MTDPARTS_DEFAULT	"mtdparts=gpmi-nand:"		\
-				"4096k(mx7-bcb),"		\
-				"1408k(u-boot)ro,"		\
+				"512k(mx7-bcb),"		\
+				"3584k(u-boot)ro,"		\
 				"512k(u-boot-env),"		\
 				"-(ubi)"
 
@@ -473,8 +474,8 @@
 #define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
 #elif defined(CONFIG_ENV_IS_IN_NAND)
 #undef CONFIG_ENV_SIZE
-#define CONFIG_ENV_OFFSET		(8 << 20)
-#define CONFIG_ENV_SECT_SIZE		(128 << 10)
+#define CONFIG_ENV_OFFSET		(4 * 1024 * 1024)
+#define CONFIG_ENV_SECT_SIZE		(128 * 1024)
 #define CONFIG_ENV_SIZE			CONFIG_ENV_SECT_SIZE
 #endif
 
