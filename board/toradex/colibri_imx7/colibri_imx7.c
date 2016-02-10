@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Freescale Semiconductor, Inc.
- *               2015 Toradex AG                  
+ *               2016 Toradex AG
  * 
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -545,10 +545,8 @@ int board_init(void)
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {
 	/* 4 bit bus width */
+	{"nand", MAKE_CFGVAL(0x40, 0x34, 0x00, 0x00)},
 	{"sd1", MAKE_CFGVAL(0x10, 0x10, 0x00, 0x00)},
-	{"emmc", MAKE_CFGVAL(0x10, 0x2a, 0x00, 0x00)},
-	{"nand", MAKE_CFGVAL(0x34, 0x00, 0x00, 0x00)},
-	{"qspi", MAKE_CFGVAL(0x00, 0x40, 0x00, 0x00)},
 	{NULL,   0},
 };
 #endif
