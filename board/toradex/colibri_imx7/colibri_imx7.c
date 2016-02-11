@@ -39,6 +39,7 @@
 #endif
 #endif /*CONFIG_FASTBOOT*/
 
+//#define COLIBRI_EXT_PHYCLK
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -319,7 +320,11 @@ static iomux_v3_cfg_t const fec1_pads[] = {
 	MX7D_PAD_ENET1_RGMII_TX_CTL__ENET1_RGMII_TX_CTL | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX7D_PAD_ENET1_RGMII_TD0__ENET1_RGMII_TD0 | MUX_PAD_CTRL(ENET_PAD_CTRL),
 	MX7D_PAD_ENET1_RGMII_TD1__ENET1_RGMII_TD1 | MUX_PAD_CTRL(ENET_PAD_CTRL),
+#ifndef COLIBRI_EXT_PHYCLK
 	MX7D_PAD_GPIO1_IO12__CCM_ENET_REF_CLK1 | MUX_PAD_CTRL(ENET_PAD_CTRL) | MUX_MODE_SION,
+#else
+	MX7D_PAD_GPIO1_IO12__CCM_ENET_REF_CLK1 | MUX_PAD_CTRL(ENET_PAD_CTRL),
+#endif
 	MX7D_PAD_SD2_CD_B__ENET1_MDIO | MUX_PAD_CTRL(ENET_PAD_CTRL_MII),
 	MX7D_PAD_SD2_WP__ENET1_MDC | MUX_PAD_CTRL(ENET_PAD_CTRL_MII),
 };
@@ -344,9 +349,9 @@ static void setup_dtemode_uart(void)
 }
 
 static void setup_iomux_uart(void)
- {
+{
 	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
- }
+}
 
 #ifdef CONFIG_FSL_ESDHC
 
@@ -479,12 +484,18 @@ static int setup_fec(void)
 		= (struct iomuxc_gpr_base_regs *) IOMUXC_GPR_BASE_ADDR;
 	int ret;
 
+#ifndef COLIBRI_EXT_PHYCLK
 	/* Use 50M anatop REF_CLK1 for ENET1, clear gpr1[13], set gpr1[17]
 	 * and output it on the pin */
 	clrsetbits_le32(&iomuxc_gpr_regs->gpr[1],
 		IOMUXC_GPR_GPR1_GPR_ENET1_TX_CLK_SEL_MASK,
 		IOMUXC_GPR_GPR1_GPR_ENET1_CLK_DIR_MASK);
-
+#else
+	/* Use 50M external CLK for ENET1, set gpr1[13], clear gpr1[17] */
+	clrsetbits_le32(&iomuxc_gpr_regs->gpr[1],
+		IOMUXC_GPR_GPR1_GPR_ENET1_CLK_DIR_MASK,
+		IOMUXC_GPR_GPR1_GPR_ENET1_TX_CLK_SEL_MASK);
+#endif
 	ret = set_clk_enet(ENET_50MHz);
 	if (ret)
 		return ret;
