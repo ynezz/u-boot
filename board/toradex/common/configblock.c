@@ -74,6 +74,8 @@ const char* const toradex_modules[] = {
 	[29] = "Apalis iMX6 Dual 512MB",
 	[30] = "Colibri T30 1GB IT",
 	[31] = "Apalis T30 1GB IT",
+	[32] = "Colibri iMX7 Solo 256MB",
+	[33] = "Colibri iMX7 Dual 512MB",
 };
 
 #ifdef CONFIG_TRDX_CFG_BLOCK_IS_IN_MMC
@@ -248,6 +250,11 @@ static int get_cfgblock_interactive(void)
 			else
 				trdx_hw_tag.prodid = COLIBRI_IMX6S;
 #endif /* CONFIG_MACH_TYPE */
+	} else if (!strcmp("mx7", soc)) {
+			if (gd->ram_size == 0x20000000)
+				trdx_hw_tag.prodid = COLIBRI_IMX7D;
+			else
+				trdx_hw_tag.prodid = COLIBRI_IMX7S;
 	} else if (!strcmp("tegra20", soc)) {
 		if (it == 'y' || it == 'Y')
 			if (gd->ram_size == 0x10000000)
