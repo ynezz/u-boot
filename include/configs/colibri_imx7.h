@@ -261,7 +261,6 @@
 	UBI_BOOTCMD \
 	"console=ttymxc0\0" \
 	"defargs=\0" \
-	"ethaddr=00:01:02:03:04:05\0" \
 	"fdt_addr=0x83000000\0" \
 	"fdt_addr_r=0x83000000\0" \
 	"fdt_file=imx7d-colibri.dtb\0" \
