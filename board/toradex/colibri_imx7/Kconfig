@@ -12,4 +12,12 @@ config SYS_SOC
 config SYS_CONFIG_NAME
 	default "colibri_imx7"
 
+menuconfig TRDX_CMD_IMX_MFGR
+	bool "Enable factory testing commands for Toradex iMX 7[B modules"
+	help
+	  This adds the command
+	    mfgr_fuse: OTP fusing during module production
+	  If executed on already fused modules they don't change any fuse setting.
+	default y
+
 endif
