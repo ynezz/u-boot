@@ -26,18 +26,17 @@
 #include <asm/imx-common/mxc_i2c.h>
 #endif
 #include <asm/arch/crm_regs.h>
-
 #ifdef CONFIG_VIDEO_MXS
 #include <linux/fb.h>
 #include <mxsfb.h>
 #endif
-
 #ifdef CONFIG_FASTBOOT
 #include <fastboot.h>
 #ifdef CONFIG_ANDROID_RECOVERY
 #include <recovery.h>
 #endif
 #endif /*CONFIG_FASTBOOT*/
+#include "../common/configblock.h"
 
 //#define COLIBRI_EXT_PHYCLK
 
@@ -550,6 +549,13 @@ int board_init(void)
 	board_qspi_init();
 #endif
 
+	return 0;
+}
+
+int checkboard_fallback(void)
+{
+	printf("Model: Toradex Colibri iMX7 %s\n",
+		(gd->ram_size == 0x20000000) ? "Dual" : "Solo");
 	return 0;
 }
 
