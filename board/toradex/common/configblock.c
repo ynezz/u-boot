@@ -45,6 +45,7 @@ struct toradex_eth_addr trdx_eth_addr;
 u32 trdx_serial;
 
 const char* const toradex_modules[] = {
+	 [0] = "UNKNOWN MODULE",
 	 [1] = "Colibri PXA270 312MHz",
 	 [2] = "Colibri PXA270 520MHz",
 	 [3] = "Colibri PXA320 806MHz",
@@ -62,6 +63,8 @@ const char* const toradex_modules[] = {
 	[15] = "Colibri iMX6 DualLite 512MB",
 	[16] = "Colibri iMX6 Solo 256MB IT",
 	[17] = "Colibri iMX6 DualLite 512MB IT",
+	[18] = "UNKNOWN MODULE",
+	[19] = "UNKNOWN MODULE",
 	[20] = "Colibri T20 256MB",
 	[21] = "Colibri T20 512MB",
 	[22] = "Colibri T20 512MB IT",
@@ -211,6 +214,10 @@ int read_trdx_cfg_block(void)
 		/* Get to next tag according to current tags length */
 		offset += tag->len * 4;
 	}
+
+	/* Cap product id to avoid issues with a yet unknown one */
+	if (trdx_hw_tag.prodid > (sizeof(toradex_modules) / sizeof(toradex_modules[0])))
+		trdx_hw_tag.prodid = 0;
 
 out:
 	free(config_block);
