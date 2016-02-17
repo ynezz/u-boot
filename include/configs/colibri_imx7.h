@@ -274,17 +274,17 @@
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 	"setethupdate=if env exists ethaddr; then; else setenv ethaddr " \
 		"00:14:2d:00:00:00; fi; tftpboot ${loadaddr} " \
-		"flash_eth.img && source ${loadaddr}\0" \
+		"${board}/flash_eth.img && source ${loadaddr}\0" \
 	"setsdupdate=mmc rescan && setenv interface mmc && " \
-		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
-		"source ${loadaddr}\0" \
+		"fatload ${interface} 0:1 ${loadaddr} " \
+		"${board}/flash_blk.img && source ${loadaddr}\0" \
 	"setup=setenv setupargs " \
 		"console=tty1 console=${console}" \
 		",${baudrate}n8 ${memargs} consoleblank=0 ${mtdparts}\0" \
 	"setupdate=run setsdupdate || run setusbupdate || run setethupdate\0" \
 	"setusbupdate=usb start && setenv interface usb && " \
-		"fatload ${interface} 0:1 ${loadaddr} flash_blk.img && " \
-		"source ${loadaddr}\0" \
+		"fatload ${interface} 0:1 ${loadaddr} " \
+		"${board}/flash_blk.img && source ${loadaddr}\0" \
         "splashpos=m,m\0" \
 
 
