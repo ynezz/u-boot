@@ -290,7 +290,7 @@ ulong lcd_setmem(ulong addr)
 	ulong size;
 	int line_length;
 
-	debug("LCD panel info: %lu x %lu, %d bit/pix\n", panel_info.vl_col,
+	debug("LCD panel info: %u x %u, %d bit/pix\n", panel_info.vl_col,
 		panel_info.vl_row, NBITS(panel_info.vl_bpix));
 
 	size = lcd_get_size(&line_length);
