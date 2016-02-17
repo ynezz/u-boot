@@ -79,6 +79,7 @@ const char* const toradex_modules[] = {
 	[31] = "Apalis T30 1GB IT",
 	[32] = "Colibri iMX7 Solo 256MB",
 	[33] = "Colibri iMX7 Dual 512MB",
+	[34] = "Apalis TK1 2GB",
 };
 
 #ifdef CONFIG_TRDX_CFG_BLOCK_IS_IN_MMC
@@ -290,6 +291,8 @@ static int get_cfgblock_interactive(void)
 				trdx_hw_tag.prodid = COLIBRI_T30;
 		}
 #endif /* CONFIG_MACH_TYPE */
+	} else if (!strcmp("tegra124", soc)) {
+		trdx_hw_tag.prodid = APALIS_TK1_2GB;
 	} else if (!strcmp("vf500", soc)) {
 		if (it == 'y' || it == 'Y')
 			trdx_hw_tag.prodid = COLIBRI_VF50_IT;
