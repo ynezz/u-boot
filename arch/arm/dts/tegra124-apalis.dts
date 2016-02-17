@@ -37,9 +37,9 @@
 		avddio-pex-supply = <&vdd_1v05>;
 		dvddio-pex-supply = <&vdd_1v05>;
 		avdd-pex-pll-supply = <&vdd_1v05>;
-		hvdd-pex-supply = <&sys_3v3_reg>;
-		hvdd-pex-pll-e-supply = <&sys_3v3_reg>;
-		vddio-pex-ctl-supply = <&sys_3v3_reg>;
+		hvdd-pex-supply = <&reg_3v3>;
+		hvdd-pex-pll-e-supply = <&reg_3v3>;
+		vddio-pex-ctl-supply = <&reg_3v3>;
 		avdd-pll-erefe-supply = <&avdd_1v05>;
 
 		/* I210 Gigabit Ethernet Controller (on-module) */
@@ -115,16 +115,16 @@
 			};
 
 			regulators {
-				vsup-sd2-supply = <&sys_3v3_reg>;
-				vsup-sd3-supply = <&sys_3v3_reg>;
-				vsup-sd4-supply = <&sys_3v3_reg>;
-				vsup-sd5-supply = <&sys_3v3_reg>;
+				vsup-sd2-supply = <&reg_3v3>;
+				vsup-sd3-supply = <&reg_3v3>;
+				vsup-sd4-supply = <&reg_3v3>;
+				vsup-sd5-supply = <&reg_3v3>;
 				vin-ldo0-supply = <&vddio_ddr_1v35>;
-				vin-ldo1-6-supply = <&sys_3v3_reg>;
+				vin-ldo1-6-supply = <&reg_3v3>;
 				vin-ldo2-5-7-supply = <&vddio_1v8>;
-				vin-ldo3-4-supply = <&sys_3v3_reg>;
-				vin-ldo9-10-supply = <&sys_3v3_reg>;
-				vin-ldo11-supply = <&sys_3v3_reg>;
+				vin-ldo3-4-supply = <&reg_3v3>;
+				vin-ldo9-10-supply = <&reg_3v3>;
+				vin-ldo11-supply = <&reg_3v3>;
 
 				vdd_cpu: sd0 {
 					regulator-name = "+VDD_CPU_AP";
@@ -345,31 +345,20 @@
 		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(N, 5) GPIO_ACTIVE_HIGH>;
 	};
 
-	regulators {
-		compatible = "simple-bus";
-		#address-cells = <1>;
-		#size-cells = <0>;
+	reg_3v3_mxm: regulator-3v3-mxm {
+		compatible = "regulator-fixed";
+		regulator-name = "+V3.3_MXM";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
 
-		mxm_3v3_reg: regulator@100 {
-			compatible = "regulator-fixed";
-			reg = <100>;
-			regulator-name = "+V3.3_MXM";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			regulator-always-on;
-		};
-
-		sys_3v3_reg: regulator@101 {
-			compatible = "regulator-fixed";
-			reg = <101>;
-			regulator-name = "+V3.3";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			regulator-always-on;
-			regulator-boot-on;
-			gpio = <&pmic 2 GPIO_ACTIVE_HIGH>;
-			enable-active-high;
-			vin-supply = <&mxm_3v3_reg>;
-		};
+	reg_3v3: regulator-3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "+V3.3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&pmic 2 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		vin-supply = <&reg_3v3_mxm>;
 	};
 };
