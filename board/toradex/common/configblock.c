@@ -89,20 +89,20 @@ static int trdx_cfg_block_mmc_storage(u8 *config_block, int write)
 		ret = -ENODEV;
 		goto out;
 	}
-	if (part != mmc->part_num) {
-		if (mmc_switch_part(dev, part)) {
-			puts("MMC partition switch failed\n");
-			ret = -ENODEV;
-			goto out;
-		}
+
+	if (mmc_select_hwpart(dev, part)) {
+		puts("MMC partition switch failed\n");
+		ret = -ENODEV;
+		goto out;
 	}
+
 	if (offset < 0)
 		offset += mmc->capacity;
 	blk_start = ALIGN(offset, mmc->write_bl_len) / mmc->write_bl_len;
 
 	if (!write) {
 		/* Careful reads a whole block of 512 bytes into config_block */
-		if (mmc->block_dev.block_read(dev, blk_start, 1,
+		if (mmc->block_dev.block_read(&mmc->block_dev, blk_start, 1,
 					      (unsigned char *)config_block) !=
 		    1) {
 			ret = -EIO;
@@ -110,7 +110,7 @@ static int trdx_cfg_block_mmc_storage(u8 *config_block, int write)
 		}
 	} else {
 		/* Just writing one 512 byte block */
-		if (mmc->block_dev.block_write(dev, blk_start, 1,
+		if (mmc->block_dev.block_write(&mmc->block_dev, blk_start, 1,
 					       (unsigned char *)config_block) !=
 		    1) {
 			ret = -EIO;
