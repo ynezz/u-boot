@@ -322,6 +322,10 @@ void set_wdog_reset(struct wdog_regs *wdog)
  * to SBMR1, which will determine the boot device.
  */
 const struct boot_mode soc_boot_modes[] = {
+#if 0 /* not working as in iMX6 */
+	/* reserved value should start rom usb */
+	{"usb",		MAKE_CFGVAL(0x01, 0x00, 0x00, 0x00)},
+#endif
 	{"ecspi1:0",	MAKE_CFGVAL(0x00, 0x60, 0x00, 0x00)},
 	{"ecspi1:1",	MAKE_CFGVAL(0x40, 0x62, 0x00, 0x00)},
 	{"ecspi1:2",	MAKE_CFGVAL(0x80, 0x64, 0x00, 0x00)},
