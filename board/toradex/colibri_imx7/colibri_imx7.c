@@ -38,7 +38,7 @@
 #endif /*CONFIG_FASTBOOT*/
 #include "../common/configblock.h"
 
-//#define COLIBRI_EXT_PHYCLK
+#define COLIBRI_EXT_PHYCLK
 
 DECLARE_GLOBAL_DATA_PTR;
 
