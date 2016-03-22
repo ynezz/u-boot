@@ -21,6 +21,7 @@
 #include <miiphy.h>
 #include <netdev.h>
 #include <power/pmic.h>
+#include <power/rn5t567_pmic.h>
 #ifdef CONFIG_SYS_I2C_MXC
 #include <i2c.h>
 #include <asm/imx-common/mxc_i2c.h>
@@ -572,6 +573,29 @@ static const struct boot_mode board_boot_modes[] = {
 #define I2C_PMIC	0
 int power_init_board(void)
 {
+	struct pmic *p;
+	int ret;
+
+	unsigned int reg, ver;
+
+	ret = power_rn5t567_init(I2C_PMIC);
+	if (ret)
+		return ret;
+
+	p = pmic_get("RN5T567");
+	ret = pmic_probe(p);
+	if (ret)
+		return ret;
+
+	pmic_reg_read(p, RN5T567_LSIVER, &ver);
+	pmic_reg_read(p, RN5T567_OTPVER, &reg);
+	printf("PMIC:  RN5T567 LSIVER=0x%x OTPVER=0x%x\n", ver, reg);
+
+	/* set jduge and press timer of N_OE to minimal values */
+	pmic_reg_read(p, RN5T567_NOETIMSETCNT, &reg);
+	reg &= ~0x7;
+	pmic_reg_write(p, RN5T567_NOETIMSETCNT, reg);
+
 	return 0;
 }
 #endif
