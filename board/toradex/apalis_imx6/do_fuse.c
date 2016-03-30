@@ -55,6 +55,10 @@ int do_updt_fuse(cmd_tbl_t *cmdtp, int flag, int argc,
 	int ret;
 	int confirmed = argc >= 1 && !strcmp(argv[1], "-y");
 
+	/* can be used in scripts for command availability check */
+	if (argc >= 1 && !strcmp(argv[1], "-n"))
+		return CMD_RET_SUCCESS;
+
 	/* boot cfg */
 	fuse_sense(0, 5, &val);
 	printf("Fuse 0, 5: %8x\n", val);
@@ -89,5 +93,5 @@ U_BOOT_CMD(
 U_BOOT_CMD(
 	updt_fuse, 2, 0, do_updt_fuse,
 	"OTP fusing during module update",
-	"updt_fuse [-y] - boot cfg fast boot mode fusing"
+	"updt_fuse [-n] [-y] - boot cfg fast boot mode fusing"
 );
