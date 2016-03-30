@@ -478,11 +478,7 @@
 #define CONFIG_ENV_SIZE			CONFIG_ENV_SECT_SIZE
 #endif
 
-#ifdef CONFIG_SYS_USE_NAND
 #define CONFIG_SYS_FSL_USDHC_NUM	1
-#else
-#define CONFIG_SYS_FSL_USDHC_NUM	1
-#endif
 #define CONFIG_SYS_MMC_ENV_DEV		0   /* USDHC1 */
 #define CONFIG_SYS_MMC_ENV_PART		0	/* user area */
 #define CONFIG_MMCROOT			"/dev/mmcblk0p2"  /* USDHC1 */
