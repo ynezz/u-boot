@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, Toradex AG
+ * Copyright (C) 2014-2016, Toradex AG
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -29,7 +29,7 @@ static int mfgr_fuse(void)
 		return CMD_RET_FAILURE;
 	}
 	/* boot cfg */
-	fuse_prog(0, 5, 0x00005062);
+	fuse_prog(0, 5, 0x00005072);
 	/* BT_FUSE_SEL */
 	fuse_prog(0, 6, 0x00000010);
 	return CMD_RET_SUCCESS;
@@ -48,8 +48,46 @@ int do_mfgr_fuse(cmd_tbl_t *cmdtp, int flag, int argc,
 	return ret;
 }
 
+int do_updt_fuse(cmd_tbl_t *cmdtp, int flag, int argc,
+		char * const argv[])
+{
+	unsigned val;
+	int ret;
+	int confirmed = argc >= 1 && !strcmp(argv[1], "-y");
+
+	/* boot cfg */
+	fuse_sense(0, 5, &val);
+	printf("Fuse 0, 5: %8x\n", val);
+	if(val & 0x10)
+	{
+		puts("Fast boot mode already fused, no need to fuse\n");
+		return CMD_RET_SUCCESS;
+	}
+	if (!confirmed) {
+		puts("Warning: Programming fuses is an irreversible operation!\n"
+				"         Updating to fast boot mode prevents easy\n"
+				"         downgrading to previous BSP versions.\n"
+				"\nReally perform this fuse programming? <y/N>\n");
+	        if (!confirm_yesno())
+			return CMD_RET_FAILURE;
+	}
+	puts("Fusing fast boot mode...\n");
+	ret = fuse_prog(0, 5, 0x00005072);
+	if (ret == CMD_RET_SUCCESS)
+		puts("done.\n");
+	else
+		puts("failed.\n");
+	return ret;
+}
+
 U_BOOT_CMD(
 	mfgr_fuse, 1, 0, do_mfgr_fuse,
-	"OTP fusing during module production\n",
+	"OTP fusing during module production",
 	""
+);
+
+U_BOOT_CMD(
+	updt_fuse, 2, 0, do_updt_fuse,
+	"OTP fusing during module update",
+	"updt_fuse [-y] - boot cfg fast boot mode fusing"
 );
