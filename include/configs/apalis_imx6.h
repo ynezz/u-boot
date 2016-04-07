@@ -154,22 +154,30 @@
 #define CONFIG_MXC_UART
 #define CONFIG_MXC_UART_BASE		UART1_BASE
 
+/*
+ * Disabled for now, leading to some linker error related to VFP:
+ * libgcc.a(_udivmoddi4.o) uses VFP register arguments, u-boot does not
+ */
 /* Framebuffer and LCD */
+#ifdef CONFIG_ENABLE_VIDEO
 #define CONFIG_VIDEO
 #define CONFIG_VIDEO_IPUV3
+#define CONFIG_IPUV3_CLK		260000000
 #define CONFIG_CFB_CONSOLE
 #define CONFIG_VGA_AS_SINGLE_DEVICE
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
-#define CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE
-#define CONFIG_VIDEO_BMP_RLE8
-#define CONFIG_SPLASH_SCREEN
-#define CONFIG_BMP_16BPP
-#define CONFIG_VIDEO_LOGO
-#define CONFIG_IPUV3_CLK		260000000
-#define CONFIG_CMD_HDMIDETECT
-#define CONFIG_CONSOLE_MUX
 #define CONFIG_IMX_HDMI
 #define CONFIG_IMX_VIDEO_SKIP
+#define CONFIG_BMP_16BPP
+#define CONFIG_VIDEO_BMP_RLE8
+#define CONFIG_SPLASH_SCREEN
+#define CONFIG_VIDEO_LOGO
+#define CONFIG_CMD_BMP
+#define CONFIG_CMD_HDMIDETECT
+#endif
+
+#define CONFIG_CONSOLE_MUX
+#define CONFIG_SYS_CONSOLE_IS_IN_ENV
+#define CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
@@ -353,8 +361,6 @@
 #ifndef CONFIG_SYS_DCACHE_OFF
 #define CONFIG_CMD_CACHE
 #endif
-
-#define CONFIG_CMD_BMP
 
 #define CONFIG_CMD_TIME
 
