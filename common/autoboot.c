@@ -252,11 +252,13 @@ const char *bootdelay_process(void)
 
 #ifdef is_boot_from_usb
 	if (is_boot_from_usb()) {
+		printf("Boot from USB\n");
+		/*
 		disconnect_from_pc();
-		printf("Boot from USB for mfgtools\n");
 		bootdelay = 0;
 		set_default_env("Use default environment for \
 				 mfgtools\n");
+		*/
 	} else {
 		printf("Normal Boot\n");
 	}
@@ -289,10 +291,12 @@ const char *bootdelay_process(void)
 		s = getenv("bootcmd");
 
 #ifdef is_boot_from_usb
+	/*
 	if (is_boot_from_usb()) {
 		s = getenv("bootcmd_mfg");
 		printf("Run bootcmd_mfg: %s\n", s);
 	}
+	*/
 #endif
 
 	process_fdt_options(gd->fdt_blob);
