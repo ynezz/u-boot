@@ -789,8 +789,11 @@ static void setup_display(void)
 
 int board_early_init_f(void)
 {
+#if defined(CONFIG_VIDEO_IPUV3)
 	imx_iomux_v3_setup_multiple_pads(pwr_intb_pads,
 					ARRAY_SIZE(pwr_intb_pads));
+#endif
+
 #ifndef CONFIG_APALIS_IMX6_V1_0
 	setup_iomux_dte_uart();
 #else
