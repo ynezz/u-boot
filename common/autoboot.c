@@ -12,6 +12,7 @@
 #include <fdtdec.h>
 #include <menu.h>
 #include <post.h>
+#include <status_led.h>
 
 #ifdef is_boot_from_usb
 #include <environment.h>
@@ -187,7 +188,12 @@ static int abortboot_normal(int bootdelay)
 # endif
 				break;
 			}
+#if defined(CONFIG_STATUS_LED)
+			status_led_tick(get_ticks());
+			udelay(100);
+#else
 			udelay(10000);
+#endif
 		} while (!abort && get_timer(ts) < 1000);
 
 		printf("\b\b\b%2d ", bootdelay);
@@ -314,6 +320,9 @@ void autoboot_command(const char *s)
 		int prev = disable_ctrlc(1);	/* disable Control C checking */
 #endif
 
+#if defined(CONFIG_STATUS_LED)
+		green_led_on();
+#endif
 		run_command_list(s, -1, 0);
 
 #if defined(CONFIG_AUTOBOOT_KEYED) && !defined(CONFIG_AUTOBOOT_KEYED_CTRLC)
