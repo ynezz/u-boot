@@ -684,31 +684,54 @@ int do_patch_ddr_size(cmd_tbl_t *cmdtp, int flag, int argc,
 		char * const argv[])
 {
 	char *ivt;
+	unsigned len, *next = 0, *start_dcd = 0;
 	struct mmc *mmc;
-	int ret = 0;
+	int found = 0, ret = 0;
 
 	ivt = memalign(ARCH_DMA_MINALIGN, 1024);
-	if (ivt != NULL) {
-		/* read IVT */
-		mmc = find_mmc_device(0);
-		/* Switch to primary eMMC boot area partition */
-		mmc_switch_part(0, 1);
-		ret = mmc->block_dev.block_read(0, 2, 2, ivt);
-		/* FIXME: Parse IVT to find DCD, parse DCD to find correct write addr */
-		if(ret == 2) {
-			if(is_cpu_type(MXC_CPU_MX6DL) && (ivt[0x215] == 0x19)) {
-				ivt[0x215] = 0x1a;
+	if (ivt == NULL)
+		goto fail;
+
+	/* read IVT */
+	mmc = find_mmc_device(0);
+	/* Switch to primary eMMC boot area partition */
+	mmc_switch_part(0, 1);
+	ret = mmc->block_dev.block_read(0, 2, 2, ivt);
+	if (ret != 2)
+		goto fail;
+	if (is_cpu_type(MXC_CPU_MX6DL)) {
+		start_dcd = (unsigned *)(ivt + *(unsigned*)(&ivt[0xc]) -
+		                               *(unsigned*)(&ivt[0x14]));
+		if ((*start_dcd & 0xfe0000ff) == 0x400000d2) {
+			len = (*start_dcd & 0xffff00) >> 8;
+			/* search register value for addr 0x21b0000 */
+			for (next = start_dcd; next < (start_dcd + len/4);
+			     next++) {
+				if (*next == 0x00001b02) {
+					next++;
+					found = 1;
+					break;
+				}
+			}
+		}
+		if (found) {
+			if ((*next & 0x0000ff00) == 0x00001900) {
+				*next &= ~0x0000ff00;
+				*next |= 0x00001a00;
 				ret = mmc->block_dev.block_write(0, 2, 2, ivt);
 				puts("patched, ");
 			}
-		}
-		/* Switch back to regular eMMC user partition */
-		mmc_switch_part(0, 0);
+                } else
+			puts("reg/val pair not found, ");
 	}
-	if(ret == 2)
-		puts("done.\n");
-	else
-		puts("failed.\n");
+	/* Switch back to regular eMMC user partition */
+	mmc_switch_part(0, 0);
+
+	puts("done.\n");
+	return CMD_RET_SUCCESS;
+
+fail:
+	puts("failed.\n");
 	return CMD_RET_SUCCESS;
 }
 
