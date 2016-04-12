@@ -40,4 +40,8 @@ menuconfig TRDX_CMD_IMX_MFGR
 	  If executed on already fused modules they don't change any fuse setting.
 	default y
 
+menuconfig TRDX_BOARD_IXORA
+	bool "Add support for Ixora based board"
+	default y
+
 endif
