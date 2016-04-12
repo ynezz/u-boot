@@ -361,11 +361,13 @@ int board_ehci_power(int port, int on)
 #endif
 
 #ifdef CONFIG_FSL_ESDHC
-/* use the following sequence: eMMC, MMC, SD */
+/* use the following sequence: eMMC, SD, MMC */
 struct fsl_esdhc_cfg usdhc_cfg[CONFIG_SYS_FSL_USDHC_NUM] = {
 	{USDHC3_BASE_ADDR},
-	{USDHC1_BASE_ADDR},
 	{USDHC2_BASE_ADDR},
+#if CONFIG_SYS_FSL_USDHC_NUM > 2
+	{USDHC1_BASE_ADDR},
+#endif
 };
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -393,12 +395,16 @@ int board_mmc_init(bd_t *bis)
 	u32 index = 0;
 
 	usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-	usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
-	usdhc_cfg[2].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+	usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+#if CONFIG_SYS_FSL_USDHC_NUM > 2
+	usdhc_cfg[2].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+#endif
 
 	usdhc_cfg[0].max_bus_width = 8;
-	usdhc_cfg[1].max_bus_width = 8;
-	usdhc_cfg[2].max_bus_width = 4;
+	usdhc_cfg[1].max_bus_width = 4;
+#if CONFIG_SYS_FSL_USDHC_NUM > 2
+	usdhc_cfg[2].max_bus_width = 8;
+#endif
 
 	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
 		switch (index) {
@@ -408,11 +414,11 @@ int board_mmc_init(bd_t *bis)
 			break;
 		case 1:
 			imx_iomux_v3_setup_multiple_pads(
-				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
+				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
 			break;
 		case 2:
 			imx_iomux_v3_setup_multiple_pads(
-				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
+				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
 			break;
 		default:
 			printf("Warning: you configured more USDHC controllers"
