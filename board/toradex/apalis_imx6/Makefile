@@ -4,3 +4,4 @@
 obj-y  := apalis_imx6.o
 obj-$(CONFIG_TRDX_CMD_IMX_MFGR)  += pf0100.o
 obj-$(CONFIG_TRDX_CMD_IMX_MFGR)  += do_fuse.o
+obj-$(CONFIG_TRDX_BOARD_IXORA)  += led_ixora.o
