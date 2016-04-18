@@ -278,7 +278,9 @@ iomux_v3_cfg_t const gpio_pads[] = {
 
 static void setup_iomux_gpio(void)
 {
+#ifndef CONFIG_BOARD_GABEN_FLEXISBC
 	imx_iomux_v3_setup_multiple_pads(gpio_pads, ARRAY_SIZE(gpio_pads));
+#endif
 }
 
 iomux_v3_cfg_t const usb_pads[] = {
@@ -292,8 +294,10 @@ iomux_v3_cfg_t const usb_pads[] = {
 	/* USBO1_ID */
 	MX6_PAD_ENET_RX_ER__USB_OTG_ID	| MUX_PAD_CTRL(WEAK_PULLUP),
 	/* USBO1_EN */
+#ifndef CONFIG_BOARD_GABEN_FLEXISBC
 	MX6_PAD_EIM_D22__GPIO3_IO22 | MUX_PAD_CTRL(NO_PAD_CTRL),
 #	define GPIO_USBO_EN IMX_GPIO_NR(3, 22)
+#endif
 };
 
 /*
@@ -341,9 +345,11 @@ int board_ehci_power(int port, int on)
 {
 	switch (port) {
 	case 0:
+#ifndef CONFIG_BOARD_GABEN_FLEXISBC
 		/* control OTG power */
 		gpio_direction_output(GPIO_USBO_EN, on);
 		mdelay(100);
+#endif
 		break;
 	case 1:
 		/* Control MXM USBH */
@@ -793,11 +799,47 @@ static void setup_display(void)
 }
 #endif /* defined(CONFIG_VIDEO_IPUV3) */
 
+#ifdef CONFIG_BOARD_GABEN_FLEXISBC
+
+#define BTN0_GPIO	IMX_GPIO_NR(1, 20)
+#define BTN1_GPIO	IMX_GPIO_NR(2, 2)
+#define BTN2_GPIO	IMX_GPIO_NR(2, 3)
+#define BTN3_GPIO	IMX_GPIO_NR(1, 16)
+#define RELAY2_GPIO 	IMX_GPIO_NR(2, 27)
+#define HEARTBEAT_GPIO	IMX_GPIO_NR(3, 22)
+
+static void setup_flexisbc_gpios(void)
+{
+	static iomux_v3_cfg_t const flexisbc_btn_pads[] = {
+		MX6_PAD_SD1_CLK__GPIO1_IO20 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BTN0 */
+		MX6_PAD_NANDF_D2__GPIO2_IO02 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BTN1 */
+		MX6_PAD_NANDF_D3__GPIO2_IO03 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BTN2 */
+		MX6_PAD_SD1_CLK__GPIO1_IO20 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* BTN3 */
+		MX6_PAD_EIM_LBA__GPIO2_IO27 | MUX_PAD_CTRL(NO_PAD_CTRL),	/* RELAY2 */
+		MX6_PAD_EIM_D22__GPIO3_IO22 | MUX_PAD_CTRL(NO_PAD_CTRL), 	/* HEARTBEAT */
+	};
+
+	imx_iomux_v3_setup_multiple_pads(flexisbc_btn_pads,
+					 ARRAY_SIZE(flexisbc_btn_pads));
+	gpio_direction_input(BTN0_GPIO);
+	gpio_direction_input(BTN1_GPIO);
+	gpio_direction_input(BTN2_GPIO);
+	gpio_direction_input(BTN3_GPIO);
+	gpio_direction_output(RELAY2_GPIO, 0);
+	gpio_direction_output(HEARTBEAT_GPIO, 0);
+}
+
+#endif /* CONFIG_BOARD_GABEN_FLEXISBC */
+
 int board_early_init_f(void)
 {
 #if defined(CONFIG_VIDEO_IPUV3)
 	imx_iomux_v3_setup_multiple_pads(pwr_intb_pads,
 					ARRAY_SIZE(pwr_intb_pads));
+#endif
+
+#ifdef CONFIG_BOARD_GABEN_FLEXISBC
+	setup_flexisbc_gpios();
 #endif
 
 #ifndef CONFIG_APALIS_IMX6_V1_0
