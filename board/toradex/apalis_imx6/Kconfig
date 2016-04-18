@@ -42,6 +42,6 @@ menuconfig TRDX_CMD_IMX_MFGR
 
 menuconfig TRDX_BOARD_IXORA
 	bool "Add support for Ixora based board"
-	default y
+	default n
 
 endif
