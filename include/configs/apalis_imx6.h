@@ -193,13 +193,13 @@
 #undef CONFIG_CMD_FLASH
 
 #undef CONFIG_BOOTDELAY
-#define CONFIG_BOOTDELAY		1
+#define CONFIG_BOOTDELAY		10
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #undef CONFIG_IPADDR
-#define CONFIG_IPADDR			192.168.10.2
+#define CONFIG_IPADDR			192.168.1.10
 #define CONFIG_NETMASK			255.255.255.0
 #undef CONFIG_SERVERIP
-#define CONFIG_SERVERIP			192.168.10.1
+#define CONFIG_SERVERIP			192.168.1.90
 
 #define CONFIG_LOADADDR			0x12000000
 #define CONFIG_SYS_TEXT_BASE		0x17800000
@@ -282,7 +282,7 @@
 #define FDT_FILE "imx6q-apalis_v1_0-eval.dtb"
 #endif
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"bootcmd=run emmcboot ; echo ; echo emmcboot failed ; " \
+	"bootcmd=run devboot; emmcboot ; echo ; echo emmcboot failed ; " \
 		"run nfsboot ; echo ; echo nfsboot failed ; " \
 		"usb start ;" \
 		"setenv stdout serial,vga ; setenv stdin serial,usbkbd\0" \
@@ -314,12 +314,20 @@
 	"vidargs=mxc_hdmi.only_cea=1 " \
 		"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 " \
 		"video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off " \
-		"fbmem=32M\0 "
+		"fbmem=32M\0 " \
+	"devboot=run setup; setenv bootargs ${nfsargs} netdevwait console=${console},${baudrate} " \
+		"earlyprintk=serial,${console},${baudrate}; echo Booting from TFTP; " \
+		"tftpboot ${kernel_addr_r} imx6-kernel && tftpboot ${fdt_addr_r} imx6-dtb && " \
+		"bootm ${kernel_addr_r} - ${fdt_addr_r}\0" \
+	"nfsargs=root=/dev/nfs nfsroot=192.168.1.90:/opt/devel/openwrt-master.git/bin/imx6/rootfs " \
+		"ip=192.168.1.10:192.168.1.90:192.168.1.1:255.255.255.0:apalis:eth0:off nfsrootdebug\0" \
+	"set_blkcnt=setexpr blkcnt ${filesize} + 0x1ff && setexpr blkcnt ${blkcnt} / 0x200\0" \
+	"uu=tftp ${loadaddr} u-boot-dev.imx-it && run set_blkcnt && mmc dev 0 1 && mmc write ${loadaddr} 2 ${blkcnt}\0"
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
-#define CONFIG_SYS_PROMPT		"Apalis iMX6 # "
+#define CONFIG_SYS_PROMPT		"Gaben FlexiSBC # "
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE		1024
 #define CONFIG_SYS_MAXARGS		48
