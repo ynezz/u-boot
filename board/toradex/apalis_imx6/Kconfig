@@ -44,4 +44,8 @@ menuconfig TRDX_BOARD_IXORA
 	bool "Add support for Ixora based board"
 	default n
 
+menuconfig BOARD_GABEN_FLEXISBC
+	bool "Add support for Gaben FlexiSBC board"
+	default n
+
 endif
