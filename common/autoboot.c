@@ -321,6 +321,7 @@ void autoboot_command(const char *s)
 #endif
 
 #if defined(CONFIG_STATUS_LED)
+		status_led_set(STATUS_LED_BOOT, STATUS_LED_OFF);
 		green_led_on();
 #endif
 		run_command_list(s, -1, 0);
