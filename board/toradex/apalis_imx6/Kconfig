@@ -50,6 +50,21 @@ config TDX_APALIS_IMX6_V1_0
 	    otherwise the UARTs are configuered in DTE mode.
 	default n
 
+config TDX_APALIS_IMX6_BOOT_PART
+	int "Partition number to use for boot filesystem"
+	default 1
+	help
+	  The partition number to use for boot filesystem this is the
+	  partition that typically contains boot.scr, DTBs, uImage etc.
+
+config TDX_APALIS_IMX6_ROOT_PART
+	int "Partition number to use for root filesystem"
+	default 2
+	help
+	  The partition number to use for root filesystem this is the
+	  partition that is typically specified with root=/dev/sdaX or
+	  which gets converted into a root=PARTUUID=some_uuid.
+
 source "board/toradex/common/Kconfig"
 
 endif

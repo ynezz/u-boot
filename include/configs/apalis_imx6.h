@@ -142,9 +142,9 @@
 	"imx6q-colibri-cam-eval-v3.dtb fat 0 1"
 
 #define EMMC_BOOTCMD \
-	"emmcargs=ip=off root=/dev/mmcblk0p2 rw,noatime rootfstype=ext3 " \
+	"emmcargs=ip=off root=PARTUUID=${uuid} rw,noatime rootfstype=ext3 " \
 		"rootwait\0" \
-	"emmcboot=run setup; " \
+	"emmcboot=run setup; run finduuid;" \
 		"setenv bootargs ${defargs} ${emmcargs} ${setupargs} " \
 		"${vidargs}; echo Booting from internal eMMC chip...; "	\
 		"run emmcdtbload; load mmc 0:1 ${kernel_addr_r} " \
@@ -201,10 +201,20 @@
 #define FDT_FILE "imx6q-apalis_v1_0-eval.dtb"
 #endif
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"bootcmd=run emmcboot ; echo ; echo emmcboot failed ; " \
+	"script=boot.scr\0" \
+	"mmcbootdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+	"bootpart=" __stringify(CONFIG_TDX_APALIS_IMX6_BOOT_PART) "\0" \
+	"rootpart=" __stringify(CONFIG_TDX_APALIS_IMX6_ROOT_PART) "\0" \
+	"finduuid=part uuid mmc ${mmcbootdev}:${rootpart} uuid\0" \
+	"loadbootscript=" \
+		"load mmc ${mmcbootdev}:${bootpart} ${loadaddr} ${script};\0" \
+	"bootscript=echo Running bootscript from mmc ...; " \
+		"source\0" \
+	"bootcmd_default=run emmcboot ; echo ; echo emmcboot failed ; " \
 		"run nfsboot ; echo ; echo nfsboot failed ; " \
 		"usb start ;" \
-		"setenv stdout serial,vga ; setenv stdin serial,usbkbd\0" \
+		"setenv stdout serial,vga ; setenv stdin serial,usbkbd;" \
+		"sdp 0\0" \
 	"boot_file=uImage\0" \
 	"console=ttymxc0\0" \
 	"defargs=enable_wait_mode=off vmalloc=400M\0" \
@@ -232,7 +242,16 @@
 	"vidargs=mxc_hdmi.only_cea=1 " \
 		"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 " \
 		"video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off " \
-		"fbmem=32M\0 "
+		"fbmem=32M\0 " \
+	"set_blkcnt=setexpr blkcnt ${filesize} + 0x1ff && setexpr blkcnt ${blkcnt} / 0x200\0"
+
+#define CONFIG_BOOTCOMMAND \
+	   "mmc dev ${mmcbootdev};" \
+	   "if run loadbootscript; then " \
+		   "run bootscript; " \
+	   "else " \
+		   "run bootcmd_default; " \
+	   "fi; "
 
 /* Miscellaneous configurable options */
 #undef CONFIG_SYS_CBSIZE
