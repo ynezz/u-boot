@@ -1174,7 +1174,6 @@ int ddr3_tip_ip_training_wrapper(u32 dev_num, enum hws_access_type access_type,
 
 			/* zero the data base */
 			bit_bit_mask[sybphy_id] = 0;
-			byte_status[if_id][sybphy_id] = BYTE_NOT_DEFINED;
 			for (bit_id = 0; bit_id < bit_end; bit_id++) {
 				h2l_adll_value[sybphy_id][bit_id] = 64;
 				l2h_adll_value[sybphy_id][bit_id] = 0;
@@ -1276,6 +1275,7 @@ int ddr3_tip_ip_training_wrapper(u32 dev_num, enum hws_access_type access_type,
 			l2h_if_train_res = ddr3_tip_get_buf_ptr(dev_num, HWS_LOW2HIGH, result_type, if_id);
 			h2l_if_train_res = ddr3_tip_get_buf_ptr(dev_num, HWS_HIGH2LOW, result_type, if_id);
 			/* search from middle to end */
+
 			ddr3_tip_ip_training
 				(dev_num, ACCESS_TYPE_UNICAST,
 				 if_id, ACCESS_TYPE_MULTICAST,
@@ -1423,7 +1423,7 @@ int ddr3_tip_ip_training_wrapper(u32 dev_num, enum hws_access_type access_type,
 				* the byte can be aligned. in this case add 64 to the the low ui bits aligning it
 				* to the other ui bits
 				*/
-			if (center_subphy_adll_window[sybphy_id] >= 32) {
+			if (center_subphy_adll_window[sybphy_id] >= 32 || bit_bit_mask[sybphy_id] != 0x0) {
 				byte_status[if_id][sybphy_id] = BYTE_SPLIT_OUT_MIX;
 
 				DEBUG_TRAINING_IP_ENGINE
@@ -1432,8 +1432,12 @@ int ddr3_tip_ip_training_wrapper(u32 dev_num, enum hws_access_type access_type,
 					 if_id, sybphy_id, byte_status[if_id][sybphy_id]));
 				for (bit_id = 0; bit_id < bit_end; bit_id++) {
 					if (bit_state[sybphy_id * BUS_WIDTH_IN_BITS + bit_id] == BIT_LOW_UI) {
+						if (bit_bit_mask[sybphy_id] & (1 << bit_id))
+							continue;
 						l2h_if_train_res[sybphy_id * BUS_WIDTH_IN_BITS + bit_id] += 64;
+						l2h_adll_value[sybphy_id][bit_id] = l2h_if_train_res[sybphy_id * BUS_WIDTH_IN_BITS + bit_id];
 						h2l_if_train_res[sybphy_id * BUS_WIDTH_IN_BITS + bit_id] += 64;
+						h2l_adll_value[sybphy_id][bit_id] = h2l_if_train_res[sybphy_id * BUS_WIDTH_IN_BITS + bit_id];
 					}
 					DEBUG_TRAINING_IP_ENGINE
 						(DEBUG_LEVEL_TRACE,

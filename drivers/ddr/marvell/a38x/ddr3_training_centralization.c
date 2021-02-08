@@ -24,6 +24,8 @@ u8 bus_start_window[NUM_OF_CENTRAL_TYPES][MAX_INTERFACE_NUM][MAX_BUS_NUM];
 u8 centralization_state[MAX_INTERFACE_NUM][MAX_BUS_NUM];
 static u8 ddr3_tip_special_rx_run_once_flag;
 
+extern u8 byte_status[MAX_INTERFACE_NUM][MAX_BUS_NUM];
+
 static int ddr3_tip_centralization(u32 dev_num, u32 mode);
 
 /*
@@ -110,6 +112,7 @@ static int ddr3_tip_centralization(u32 dev_num, u32 mode)
 				(max_win_size - 1) + cons_tap;
 			bus_start_window[mode][if_id][bus_id] = 0;
 			centralization_result[if_id][bus_id] = 0;
+			byte_status[if_id][bus_id] = BYTE_NOT_DEFINED;
 		}
 	}
 
@@ -166,6 +169,12 @@ static int ddr3_tip_centralization(u32 dev_num, u32 mode)
 						  result[search_dir_id][7]));
 				}
 
+				DEBUG_CENTRALIZATION_ENGINE
+					(DEBUG_LEVEL_TRACE,
+					 ("byte_status[%d][%d] = 0x%x\n",
+					 if_id,
+					 bus_id,
+					 byte_status[if_id][bus_id]));
 				for (bit_id = 0; bit_id < BUS_WIDTH_IN_BITS;
 				     bit_id++) {
 					/* check if this code is valid for 2 edge, probably not :( */
@@ -174,11 +183,27 @@ static int ddr3_tip_centralization(u32 dev_num, u32 mode)
 							       [HWS_LOW2HIGH]
 							       [bit_id],
 							       EDGE_1);
+					if ((byte_status[if_id][bus_id] & BYTE_SPLIT_OUT_MIX) ||
+					    (byte_status[if_id][bus_id] & BYTE_HOMOGENEOUS_SPLIT_OUT)) {
+						if (cur_start_win[bit_id] >= 64)
+							cur_start_win[bit_id] -= 64;
+						else
+							cur_start_win[bit_id] = 0;
+						DEBUG_CENTRALIZATION_ENGINE
+							(DEBUG_LEVEL_TRACE,
+							 ("--------------------------\n"));
+					}
 					cur_end_win[bit_id] =
 						GET_TAP_RESULT(result
 							       [HWS_HIGH2LOW]
 							       [bit_id],
 							       EDGE_1);
+					if (cur_end_win[bit_id] >= 64 && (byte_status[if_id][bus_id] & BYTE_SPLIT_OUT_MIX)) {
+						cur_end_win[bit_id] -= 64;
+						DEBUG_CENTRALIZATION_ENGINE
+							(DEBUG_LEVEL_TRACE,
+							 ("++++++++++++++++++++++++++\n"));
+					}
 					/* window length */
 					current_window[bit_id] =
 						cur_end_win[bit_id] -
